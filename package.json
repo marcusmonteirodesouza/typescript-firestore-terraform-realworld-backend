@@ -1,14 +1,15 @@
 {
-  "name": "",
+  "name": "typescript-firestore-realworld-backend",
   "version": "0.0.0",
-  "description": "",
+  "description": "TypeScript codebase containing real world examples (CRUD, auth, advanced patterns, etc) that adheres to the RealWorld spec and API.",
+  "author": "Marcus Vinicius Monteiro de Souza",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
   "files": [
     "build/src"
   ],
-  "license": "Apache-2.0",
-  "keywords": [],
+  "license": "MIT",
+  "keywords": ["realworld"],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "gts lint",
