@@ -9,7 +9,9 @@
     "build/src"
   ],
   "license": "MIT",
-  "keywords": ["realworld"],
+  "keywords": [
+    "realworld"
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "gts lint",

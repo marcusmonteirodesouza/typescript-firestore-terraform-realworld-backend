@@ -1,0 +1,30 @@
+version: '3.9'
+services:
+  app:
+    build: .
+    ports:
+      - ${PORT}:${PORT}
+    environment:
+      - FIRESTORE_EMULATOR_HOST=firestore_emulator:${FIRESTORE_EMULATOR_PORT}
+      - FIRESTORE_PROJECT_ID=${FIRESTORE_PROJECT_ID}
+    depends_on:
+      firestore_emulator:
+        condition: service_healthy
+  firestore_emulator:
+    image: 'mtlynch/firestore-emulator'
+    ports:
+      - ${FIRESTORE_EMULATOR_PORT}:${FIRESTORE_EMULATOR_PORT}
+    environment:
+      - FIRESTORE_PROJECT_ID=${FIRESTORE_PROJECT_ID}
+      - PORT=${FIRESTORE_EMULATOR_PORT}
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'curl',
+          '-f',
+          'http://firestore_emulator:${FIRESTORE_EMULATOR_PORT}',
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
