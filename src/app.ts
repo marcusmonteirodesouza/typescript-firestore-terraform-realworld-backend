@@ -1,6 +1,7 @@
 import * as express from 'express';
 import {Firestore} from '@google-cloud/firestore';
 import {UsersService, UsersRouter, JWTService} from './users';
+import {errorHandler} from './error-handler';
 import {config} from './config';
 
 const firestore = new Firestore();
@@ -17,5 +18,17 @@ const app = express();
 app.use(express.json());
 
 app.use(usersRouter);
+
+app.use(
+  async (
+    err: Error,
+    _req: express.Request,
+    res: express.Response,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _next: express.NextFunction
+  ) => {
+    await errorHandler.handleError(err, res);
+  }
+);
 
 export {app};
