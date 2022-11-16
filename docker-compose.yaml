@@ -8,6 +8,8 @@ services:
       - FIRESTORE_EMULATOR_HOST=${FIRESTORE_EMULATOR_HOST}
       - FIRESTORE_PROJECT_ID=${FIRESTORE_PROJECT_ID}
       - PORT=${PORT}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - JWT_SECONDS_TO_EXPIRATION=${JWT_SECONDS_TO_EXPIRATION}
     depends_on:
       firestore_emulator:
         condition: service_healthy

@@ -2,6 +2,7 @@ import * as express from 'express';
 import {StatusCodes} from 'http-status-codes';
 import {celebrate, Joi, Segments} from 'celebrate';
 import {UsersService} from './users-service';
+import {JWTService} from './jwt-service';
 
 class UserDto {
   constructor(
@@ -14,7 +15,10 @@ class UserDto {
 }
 
 class UsersRouter {
-  constructor(private usersService: UsersService) {}
+  constructor(
+    private usersService: UsersService,
+    private jwtService: JWTService
+  ) {}
 
   get router() {
     const router = express.Router();
@@ -40,7 +44,7 @@ class UsersRouter {
             password
           );
 
-          const token = 'token';
+          const token = this.jwtService.getToken(user);
 
           const userDto = new UserDto(
             user.email,

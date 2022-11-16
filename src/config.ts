@@ -5,6 +5,9 @@ const envVarsSchema = Joi.object()
     FIRESTORE_EMULATOR_HOST: Joi.string().uri(),
     FIRESTORE_PROJECT_ID: Joi.string(),
     PORT: Joi.number().integer().required(),
+    JWT_SECRET_KEY: Joi.string().required(),
+    JWT_ISSUER: Joi.string().uri().required(),
+    JWT_SECONDS_TO_EXPIRATION: Joi.number().integer().required(),
   })
   .unknown();
 
@@ -20,6 +23,11 @@ const config = {
     projectId: envVars.FIRESTORE_PROJECT_ID,
   },
   port: envVars.PORT,
+  jwt: {
+    secretKey: envVars.JWT_SECRET_KEY,
+    issuer: envVars.JWT_ISSUER,
+    secondsToExpiration: envVars.JWT_SECONDS_TO_EXPIRATION,
+  },
 };
 
 export {config};
