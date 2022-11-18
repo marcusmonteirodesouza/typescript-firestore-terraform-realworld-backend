@@ -2,6 +2,7 @@ import * as util from 'util';
 import {Response} from 'express';
 import {isCelebrateError} from 'celebrate';
 import {StatusCodes} from 'http-status-codes';
+import {AlreadyExistsError} from '../errors';
 
 class ErrorsDto {
   public readonly errors;
@@ -21,7 +22,21 @@ class ErrorHandler {
 
     if (isCelebrateError(error)) {
       const errors = Array.from(error.details, ([, value]) => value.message);
-      return res.status(StatusCodes.BAD_REQUEST).json(new ErrorsDto(errors));
+      return res
+        .status(StatusCodes.UNPROCESSABLE_ENTITY)
+        .json(new ErrorsDto(errors));
+    }
+
+    if (error instanceof RangeError) {
+      return res
+        .status(StatusCodes.UNPROCESSABLE_ENTITY)
+        .json(new ErrorsDto([error.message]));
+    }
+
+    if (error instanceof AlreadyExistsError) {
+      return res
+        .status(StatusCodes.UNPROCESSABLE_ENTITY)
+        .json(new ErrorsDto([error.message]));
     }
 
     return res

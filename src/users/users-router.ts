@@ -5,13 +5,23 @@ import {UsersService} from './users-service';
 import {JWTService} from './jwt-service';
 
 class UserDto {
+  public readonly user;
+
   constructor(
-    public email: string,
-    public username: string,
-    public token: string,
-    public bio: string | null,
-    public image: string | null
-  ) {}
+    email: string,
+    username: string,
+    token: string,
+    bio: string | null,
+    image: string | null
+  ) {
+    this.user = {
+      email,
+      username,
+      token,
+      bio,
+      image,
+    };
+  }
 }
 
 class UsersRouter {

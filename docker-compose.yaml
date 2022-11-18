@@ -5,7 +5,7 @@ services:
     ports:
       - ${PORT}:${PORT}
     environment:
-      - FIRESTORE_EMULATOR_HOST=${FIRESTORE_EMULATOR_HOST}
+      - FIRESTORE_EMULATOR_HOST=firestore_emulator:${FIRESTORE_EMULATOR_PORT}
       - FIRESTORE_PROJECT_ID=${FIRESTORE_PROJECT_ID}
       - PORT=${PORT}
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
