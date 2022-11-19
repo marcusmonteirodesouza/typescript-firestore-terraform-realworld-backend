@@ -4,7 +4,9 @@ import {UsersService, UsersRouter, JWTService} from './users';
 import {errorHandler} from './error-handler';
 import {config} from './config';
 
-const firestore = new Firestore();
+const firestore = new Firestore({
+  projectId: config.firestore.projectId,
+});
 
 const usersService = new UsersService(firestore);
 const jwtService = new JWTService(config.jwt.secretKey, {
