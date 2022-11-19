@@ -1,4 +1,5 @@
 import * as request from 'supertest';
+import * as assert from 'node:assert';
 import {faker} from '@faker-js/faker';
 import {app} from '../../src/app';
 
@@ -14,10 +15,12 @@ class UsersClient {
       },
     };
 
-    const {body} = await request(app).post('/users').send(requestBody);
+    const response = await request(app).post('/users').send(requestBody);
+
+    assert.strictEqual(response.statusCode, 201);
 
     return {
-      user: body.user,
+      user: response.body.user,
       password,
     };
   }
@@ -28,6 +31,24 @@ class UsersClient {
     const password = faker.internet.password();
 
     return await this.registerUser(email, username, password);
+  }
+
+  async login(email: string, password: string) {
+    const requestBody = {
+      user: {
+        email,
+        password,
+      },
+    };
+
+    const response = await request(app).post('/users/login').send(requestBody);
+
+    assert.strictEqual(response.statusCode, 200);
+
+    return {
+      user: response.body.user,
+      password,
+    };
   }
 }
 

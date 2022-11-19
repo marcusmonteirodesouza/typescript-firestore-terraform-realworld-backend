@@ -1,7 +1,16 @@
 import {Firestore} from '@google-cloud/firestore';
 import * as bcrypt from 'bcryptjs';
+import {Joi} from 'celebrate';
 import {AlreadyExistsError, NotFoundError} from '../errors';
 import {User} from './user';
+
+interface UpdateUserData {
+  email?: string;
+  username?: string;
+  password?: string;
+  bio?: string;
+  image?: string;
+}
 
 class UsersService {
   private usersCollection = 'users';
@@ -13,17 +22,13 @@ class UsersService {
     username: string,
     password: string
   ): Promise<User> {
-    this.validatePasswordOrThrow(password);
+    await this.validateEmailOrThrow(email);
 
-    if (await this.getUserByEmail(email)) {
-      throw new AlreadyExistsError('"email" is taken');
-    }
+    await this.validateUsernameOrThrow(username);
 
-    if (await this.getUserByUsername(username)) {
-      throw new AlreadyExistsError('"username" is taken');
-    }
+    await this.validatePasswordOrThrow(password);
 
-    const passwordHash = await bcrypt.hash(password, 8);
+    const passwordHash = await this.hashPassword(password);
 
     const document = await this.firestore.collection(this.usersCollection).add({
       email,
@@ -31,15 +36,16 @@ class UsersService {
       passwordHash,
     });
 
-    const user = new User(document.id, email, username, null, null);
+    const user = new User(document.id, email, username, undefined, undefined);
 
     return user;
   }
 
-  async getUserById(id: string): Promise<User | undefined> {
+  async getUserById(userId: string): Promise<User | undefined> {
     const userDoc = await this.firestore
-      .doc(`${this.usersCollection}/${id}`)
+      .doc(`${this.usersCollection}/${userId}`)
       .get();
+
     const userData = userDoc.data();
 
     if (!userData) {
@@ -105,7 +111,54 @@ class UsersService {
     return user;
   }
 
-  async isPasswordValid(email: string, password: string): Promise<boolean> {
+  async updateUser(userId: string, data: UpdateUserData): Promise<User> {
+    const userDocRef = this.firestore.doc(`${this.usersCollection}/${userId}`);
+
+    const userDoc = await userDocRef.get();
+
+    if (!userDoc.exists) {
+      throw new NotFoundError(`user "${userId}" not found`);
+    }
+
+    const userData = userDoc.data()!;
+
+    if (data.email) {
+      await this.validateEmailOrThrow(data.email);
+      userData.email = data.email;
+    }
+
+    if (data.username) {
+      await this.validateUsernameOrThrow(data.username);
+      userData.username = data.username;
+    }
+
+    if (data.password) {
+      await this.validatePasswordOrThrow(data.password);
+      const passwordHash = await this.hashPassword(data.password);
+      userData.passwordHash = passwordHash;
+    }
+
+    if (data.bio) {
+      userData.bio = data.bio;
+    }
+
+    if (data.image) {
+      await this.validateImageOrThrow(data.image);
+      userData.image = data.image;
+    }
+
+    await userDocRef.update(userData);
+
+    return new User(
+      userDoc.id,
+      userData.email,
+      userData.username,
+      userData.bio,
+      userData.image
+    );
+  }
+
+  async verifyPassword(email: string, password: string): Promise<boolean> {
     const snapshot = await this.firestore
       .collection(this.usersCollection)
       .where('email', '==', email)
@@ -121,10 +174,40 @@ class UsersService {
     return await bcrypt.compare(password, userData.passwordHash);
   }
 
-  private validatePasswordOrThrow(password: string): void {
+  private async validateEmailOrThrow(email: string) {
+    const {error} = Joi.string().email().validate(email);
+
+    if (error) {
+      throw new RangeError(error.message);
+    }
+
+    if (await this.getUserByEmail(email)) {
+      throw new AlreadyExistsError('"email" is taken');
+    }
+  }
+
+  private async validateUsernameOrThrow(username: string) {
+    if (await this.getUserByUsername(username)) {
+      throw new AlreadyExistsError('"username" is taken');
+    }
+  }
+
+  private async validatePasswordOrThrow(password: string) {
     if (password.length < 8) {
       throw new RangeError('"password" must contain at least 8 characters');
     }
+  }
+
+  private async validateImageOrThrow(image: string) {
+    const {error} = Joi.string().uri().validate(image);
+
+    if (error) {
+      throw new RangeError(error.message);
+    }
+  }
+
+  private async hashPassword(password: string) {
+    return await bcrypt.hash(password, 8);
   }
 }
 

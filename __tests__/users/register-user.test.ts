@@ -145,7 +145,7 @@ describe('POST /users', () => {
     });
   });
 
-  test('given no password is less than 8 characters should return http status code 422 and an errors object', async () => {
+  test('given password is less than 8 characters should return http status code 422 and an errors object', async () => {
     const requestBody = {
       user: {
         email: faker.internet.email(),

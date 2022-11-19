@@ -13,8 +13,8 @@ class UserDto {
     email: string,
     username: string,
     token: string,
-    bio: string | null,
-    image: string | null
+    bio?: string,
+    image?: string
   ) {
     this.user = {
       email,
@@ -89,7 +89,7 @@ class UsersRouter {
           const {email, password} = req.body.user;
 
           try {
-            const isValidPassword = await this.usersService.isPasswordValid(
+            const isValidPassword = await this.usersService.verifyPassword(
               email,
               password
             );
@@ -140,6 +140,48 @@ class UsersRouter {
 
       return res.json(userDto);
     });
+
+    router.put(
+      '/user',
+      celebrate({
+        [Segments.BODY]: Joi.object().keys({
+          user: Joi.object().keys({
+            email: Joi.string().email(),
+            username: Joi.string(),
+            password: Joi.string(),
+            bio: Joi.string(),
+            image: Joi.string().uri(),
+          }),
+        }),
+      }),
+      this.auth.requireAuth,
+      async (req, res, next) => {
+        try {
+          const user = req.user!;
+
+          const {user: updateUserData} = req.body;
+
+          const updatedUser = await this.usersService.updateUser(
+            user.id,
+            updateUserData
+          );
+
+          const token = this.jwtService.getToken(updatedUser);
+
+          const userDto = new UserDto(
+            updatedUser.email,
+            updatedUser.username,
+            token,
+            updatedUser.bio,
+            updatedUser.image
+          );
+
+          return res.json(userDto);
+        } catch (err) {
+          return next(err);
+        }
+      }
+    );
 
     return router;
   }
