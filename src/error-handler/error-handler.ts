@@ -3,6 +3,7 @@ import {Response} from 'express';
 import {isCelebrateError} from 'celebrate';
 import {StatusCodes} from 'http-status-codes';
 import {AlreadyExistsError, UnauthorizedError} from '../errors';
+import {JsonWebTokenError} from 'jsonwebtoken';
 
 class ErrorsDto {
   public readonly errors;
@@ -40,6 +41,12 @@ class ErrorHandler {
     }
 
     if (error instanceof UnauthorizedError) {
+      return res
+        .status(StatusCodes.UNAUTHORIZED)
+        .json(new ErrorsDto(['unauthorized']));
+    }
+
+    if (error instanceof JsonWebTokenError) {
       return res
         .status(StatusCodes.UNAUTHORIZED)
         .json(new ErrorsDto(['unauthorized']));

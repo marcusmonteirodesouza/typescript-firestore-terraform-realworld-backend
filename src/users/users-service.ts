@@ -36,6 +36,27 @@ class UsersService {
     return user;
   }
 
+  async getUserById(id: string): Promise<User | undefined> {
+    const userDoc = await this.firestore
+      .doc(`${this.usersCollection}/${id}`)
+      .get();
+    const userData = userDoc.data();
+
+    if (!userData) {
+      return undefined;
+    }
+
+    const user = new User(
+      userDoc.id,
+      userData.email,
+      userData.username,
+      userData.bio,
+      userData.image
+    );
+
+    return user;
+  }
+
   async getUserByEmail(email: string): Promise<User | undefined> {
     const snapshot = await this.firestore
       .collection(this.usersCollection)
