@@ -5,6 +5,8 @@ import {app} from '../../src/app';
 import {usersClient} from '../utils';
 
 describe('POST /users', () => {
+  const registerUserUrl = '/users';
+
   test('given a valid request should return http status code 201 and the created user', async () => {
     const requestBody = {
       user: {
@@ -14,7 +16,7 @@ describe('POST /users', () => {
       },
     };
 
-    const response = await request(app).post('/users').send(requestBody);
+    const response = await request(app).post(registerUserUrl).send(requestBody);
 
     expect(response.status).toBe(201);
     expect(response.body).toStrictEqual({
@@ -36,7 +38,7 @@ describe('POST /users', () => {
       },
     };
 
-    const response = await request(app).post('/users').send(requestBody);
+    const response = await request(app).post(registerUserUrl).send(requestBody);
 
     expect(response.status).toBe(422);
     expect(response.body).toStrictEqual({
@@ -55,7 +57,7 @@ describe('POST /users', () => {
       },
     };
 
-    const response = await request(app).post('/users').send(requestBody);
+    const response = await request(app).post(registerUserUrl).send(requestBody);
 
     expect(response.status).toBe(422);
     expect(response.body).toStrictEqual({
@@ -65,8 +67,8 @@ describe('POST /users', () => {
     });
   });
 
-  test('given email is already taken should return http status code 422 and an errors object', async () => {
-    const existingUser = await usersClient.registerRandomUserAndDecode();
+  test('given email is taken should return http status code 422 and an errors object', async () => {
+    const existingUser = await usersClient.registerRandomUser();
 
     const requestBody = {
       user: {
@@ -76,7 +78,7 @@ describe('POST /users', () => {
       },
     };
 
-    const response = await request(app).post('/users').send(requestBody);
+    const response = await request(app).post(registerUserUrl).send(requestBody);
 
     expect(response.status).toBe(422);
     expect(response.body).toStrictEqual({
@@ -94,7 +96,7 @@ describe('POST /users', () => {
       },
     };
 
-    const response = await request(app).post('/users').send(requestBody);
+    const response = await request(app).post(registerUserUrl).send(requestBody);
 
     expect(response.status).toBe(422);
     expect(response.body).toStrictEqual({
@@ -104,8 +106,8 @@ describe('POST /users', () => {
     });
   });
 
-  test('given username is already taken should return http status code 422 and an errors object', async () => {
-    const existingUser = await usersClient.registerRandomUserAndDecode();
+  test('given username is taken should return http status code 422 and an errors object', async () => {
+    const existingUser = await usersClient.registerRandomUser();
 
     const requestBody = {
       user: {
@@ -115,7 +117,7 @@ describe('POST /users', () => {
       },
     };
 
-    const response = await request(app).post('/users').send(requestBody);
+    const response = await request(app).post(registerUserUrl).send(requestBody);
 
     expect(response.status).toBe(422);
     expect(response.body).toStrictEqual({
@@ -133,7 +135,7 @@ describe('POST /users', () => {
       },
     };
 
-    const response = await request(app).post('/users').send(requestBody);
+    const response = await request(app).post(registerUserUrl).send(requestBody);
 
     expect(response.status).toBe(422);
     expect(response.body).toStrictEqual({
@@ -152,7 +154,7 @@ describe('POST /users', () => {
       },
     };
 
-    const response = await request(app).post('/users').send(requestBody);
+    const response = await request(app).post(registerUserUrl).send(requestBody);
 
     expect(response.status).toBe(422);
     expect(response.body).toStrictEqual({

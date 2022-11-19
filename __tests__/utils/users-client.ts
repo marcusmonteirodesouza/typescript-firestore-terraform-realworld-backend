@@ -14,27 +14,20 @@ class UsersClient {
       },
     };
 
-    const response = await request(app).post('/users').send(requestBody);
+    const {body} = await request(app).post('/users').send(requestBody);
 
-    return response;
+    return {
+      user: body.user,
+      password,
+    };
   }
 
-  async registerUserAndDecode(
-    email: string,
-    username: string,
-    password: string
-  ) {
-    const {body: user} = await this.registerUser(email, username, password);
-
-    return user;
-  }
-
-  async registerRandomUserAndDecode() {
+  async registerRandomUser() {
     const email = faker.internet.email();
     const username = faker.internet.userName();
     const password = faker.internet.password();
 
-    return await this.registerUserAndDecode(email, username, password);
+    return await this.registerUser(email, username, password);
   }
 }
 
