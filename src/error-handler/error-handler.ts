@@ -2,7 +2,7 @@ import * as util from 'util';
 import {Response} from 'express';
 import {isCelebrateError} from 'celebrate';
 import {StatusCodes} from 'http-status-codes';
-import {AlreadyExistsError} from '../errors';
+import {AlreadyExistsError, UnauthorizedError} from '../errors';
 
 class ErrorsDto {
   public readonly errors;
@@ -37,6 +37,12 @@ class ErrorHandler {
       return res
         .status(StatusCodes.UNPROCESSABLE_ENTITY)
         .json(new ErrorsDto([error.message]));
+    }
+
+    if (error instanceof UnauthorizedError) {
+      return res
+        .status(StatusCodes.UNAUTHORIZED)
+        .json(new ErrorsDto(['unauthorized']));
     }
 
     return res

@@ -1,6 +1,6 @@
 import {Firestore} from '@google-cloud/firestore';
 import * as bcrypt from 'bcryptjs';
-import {AlreadyExistsError} from '../errors';
+import {AlreadyExistsError, NotFoundError} from '../errors';
 import {User} from './user';
 
 class UsersService {
@@ -82,6 +82,22 @@ class UsersService {
     );
 
     return user;
+  }
+
+  async isPasswordValid(email: string, password: string): Promise<boolean> {
+    const snapshot = await this.firestore
+      .collection(this.usersCollection)
+      .where('email', '==', email)
+      .get();
+
+    if (snapshot.empty) {
+      throw new NotFoundError('"email" not found');
+    }
+
+    const userDoc = snapshot.docs[0];
+    const userData = userDoc.data();
+
+    return await bcrypt.compare(password, userData.passwordHash);
   }
 
   private validatePasswordOrThrow(password: string): void {
