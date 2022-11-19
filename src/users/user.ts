@@ -2,15 +2,15 @@ class User {
   private _id: string;
   private _email: string;
   private _username: string;
-  private _bio: string | null;
-  private _image: string | null;
+  private _bio?: string;
+  private _image?: string;
 
   constructor(
     id: string,
     email: string,
     username: string,
-    bio: string | null,
-    image: string | null
+    bio?: string,
+    image?: string
   ) {
     this._id = id;
     this._email = email;
@@ -19,23 +19,23 @@ class User {
     this._image = image;
   }
 
-  get id(): string {
+  get id() {
     return this._id;
   }
 
-  get email(): string {
+  get email() {
     return this._email;
   }
 
-  get username(): string {
+  get username() {
     return this._username;
   }
 
-  get bio(): string | null {
+  get bio() {
     return this._bio;
   }
 
-  get image(): string | null {
+  get image() {
     return this._image;
   }
 }
