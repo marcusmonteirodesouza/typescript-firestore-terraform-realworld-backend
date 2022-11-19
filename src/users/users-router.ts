@@ -4,6 +4,7 @@ import {celebrate, Joi, Segments} from 'celebrate';
 import {UsersService} from './users-service';
 import {JWTService} from './jwt-service';
 import {NotFoundError, UnauthorizedError} from '../errors';
+import {Auth} from '../middleware';
 
 class UserDto {
   public readonly user;
@@ -27,6 +28,7 @@ class UserDto {
 
 class UsersRouter {
   constructor(
+    private auth: Auth,
     private usersService: UsersService,
     private jwtService: JWTService
   ) {}
@@ -94,7 +96,7 @@ class UsersRouter {
 
             if (!isValidPassword) {
               throw new UnauthorizedError(
-                `invalid password for email ${email}`
+                `invalid password for email "${email}"`
               );
             }
           } catch (err) {
@@ -122,6 +124,22 @@ class UsersRouter {
         }
       }
     );
+
+    router.get('/user', this.auth.requireAuth, async (req, res) => {
+      const user = req.user!;
+
+      const token = this.jwtService.getToken(user);
+
+      const userDto = new UserDto(
+        user.email,
+        user.username,
+        token,
+        user.bio,
+        user.image
+      );
+
+      return res.json(userDto);
+    });
 
     return router;
   }

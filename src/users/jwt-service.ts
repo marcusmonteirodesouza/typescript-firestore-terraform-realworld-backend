@@ -1,5 +1,6 @@
 import * as jwt from 'jsonwebtoken';
 import {User} from './user';
+import {UsersService} from './users-service';
 
 interface JWTOptions {
   issuer: string;
@@ -7,7 +8,11 @@ interface JWTOptions {
 }
 
 class JWTService {
-  constructor(private jwtSecretKey: string, private jwtOptions: JWTOptions) {}
+  constructor(
+    private usersService: UsersService,
+    private jwtSecretKey: string,
+    private jwtOptions: JWTOptions
+  ) {}
 
   getToken(user: User) {
     const token = jwt.sign({}, this.jwtSecretKey, {
@@ -17,6 +22,19 @@ class JWTService {
     });
 
     return token;
+  }
+
+  async getUser(token: string) {
+    const decodedToken = jwt.verify(token, this.jwtSecretKey, {
+      issuer: this.jwtOptions.issuer,
+      ignoreExpiration: false,
+    }) as jwt.JwtPayload;
+
+    if (!decodedToken.sub) {
+      return undefined;
+    }
+
+    return this.usersService.getUserById(decodedToken.sub);
   }
 }
 

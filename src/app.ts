@@ -3,17 +3,22 @@ import {Firestore} from '@google-cloud/firestore';
 import {UsersService, UsersRouter, JWTService} from './users';
 import {errorHandler} from './error-handler';
 import {config} from './config';
+import {Auth} from './middleware';
 
 const firestore = new Firestore({
   projectId: config.firestore.projectId,
 });
 
 const usersService = new UsersService(firestore);
-const jwtService = new JWTService(config.jwt.secretKey, {
+
+const jwtService = new JWTService(usersService, config.jwt.secretKey, {
   issuer: config.jwt.issuer,
   secondsToExpiration: config.jwt.secondsToExpiration,
 });
-const usersRouter = new UsersRouter(usersService, jwtService).router;
+
+const auth = new Auth(jwtService);
+
+const usersRouter = new UsersRouter(auth, usersService, jwtService).router;
 
 const app = express();
 
