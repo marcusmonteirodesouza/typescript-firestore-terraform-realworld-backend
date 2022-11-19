@@ -122,12 +122,12 @@ class UsersService {
 
     const userData = userDoc.data()!;
 
-    if (data.email) {
+    if (data.email && data.email !== userData.email) {
       await this.validateEmailOrThrow(data.email);
       userData.email = data.email;
     }
 
-    if (data.username) {
+    if (data.username && data.username !== userData.username) {
       await this.validateUsernameOrThrow(data.username);
       userData.username = data.username;
     }
@@ -138,11 +138,11 @@ class UsersService {
       userData.passwordHash = passwordHash;
     }
 
-    if (data.bio) {
+    if (data.bio && data.bio !== userData.bio) {
       userData.bio = data.bio;
     }
 
-    if (data.image) {
+    if (data.image && data.image !== userData.image) {
       await this.validateImageOrThrow(data.image);
       userData.image = data.image;
     }
