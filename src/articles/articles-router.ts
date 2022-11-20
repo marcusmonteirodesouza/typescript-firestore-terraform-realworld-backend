@@ -1,3 +1,4 @@
+import {celebrate, Joi, Segments} from 'celebrate';
 import * as express from 'express';
 import {Auth} from '../middleware';
 import {Profile, ProfilesService} from '../profiles';
@@ -38,28 +39,42 @@ class ArticlesRouter {
   get router() {
     const router = express.Router();
 
-    router.post('/articles', this.auth.requireAuth, async (req, res, next) => {
-      try {
-        const author = req.user!;
+    router.post(
+      '/articles',
+      celebrate({
+        [Segments.BODY]: Joi.object().keys({
+          article: Joi.object().keys({
+            title: Joi.string().required(),
+            description: Joi.string().required(),
+            body: Joi.string().required(),
+            tagList: Joi.array().items(Joi.string()),
+          }),
+        }),
+      }),
+      this.auth.requireAuth,
+      async (req, res, next) => {
+        try {
+          const author = req.user!;
 
-        const {article: createArticleParams} = req.body;
+          const {article: createArticleParams} = req.body;
 
-        const article = await this.articlesService.createArticle(
-          author.id,
-          createArticleParams
-        );
+          const article = await this.articlesService.createArticle(
+            author.id,
+            createArticleParams
+          );
 
-        console.log(article);
+          const authorProfile = await this.profilesService.getProfile(
+            author.id
+          );
 
-        const authorProfile = await this.profilesService.getProfile(author.id);
+          const articleDto = new ArticleDto(article, false, authorProfile);
 
-        const articleDto = new ArticleDto(article, false, authorProfile);
-
-        return res.json(articleDto);
-      } catch (err) {
-        return next(err);
+          return res.status(201).json(articleDto);
+        } catch (err) {
+          return next(err);
+        }
       }
-    });
+    );
 
     return router;
   }

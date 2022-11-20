@@ -38,7 +38,22 @@ class UsersClient {
     const username = faker.internet.userName();
     const password = faker.internet.password();
 
-    return await this.registerUser(email, username, password);
+    const registeredUser = await this.registerUser(email, username, password);
+
+    const updateUserParams = {
+      bio: faker.lorem.paragraphs(),
+      image: faker.internet.url(),
+    };
+
+    const updatedUser = await this.updateUser(
+      registeredUser.user.token,
+      updateUserParams
+    );
+
+    return {
+      ...updatedUser,
+      password,
+    };
   }
 
   async login(email: string, password: string) {

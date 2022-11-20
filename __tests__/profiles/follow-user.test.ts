@@ -13,16 +13,6 @@ describe('POST /profiles/:username/follow', () => {
     const follower = await usersClient.registerRandomUser();
     const followee = await usersClient.registerRandomUser();
 
-    const updateFolloweeData = {
-      bio: faker.lorem.paragraphs(),
-      image: faker.internet.url(),
-    };
-
-    const updatedFollowee = await usersClient.updateUser(
-      followee.user.token,
-      updateFolloweeData
-    );
-
     const followUserResponse = await request(app)
       .post(makeFollowUserUrl(followee.user.username))
       .set('authorization', `Token ${follower.user.token}`)
@@ -31,15 +21,15 @@ describe('POST /profiles/:username/follow', () => {
     expect(followUserResponse.status).toBe(200);
     expect(followUserResponse.body).toStrictEqual({
       profile: {
-        username: updatedFollowee.user.username,
+        username: followee.user.username,
         following: true,
-        bio: updatedFollowee.user.bio,
-        image: updatedFollowee.user.image,
+        bio: followee.user.bio,
+        image: followee.user.image,
       },
     });
 
     const gotProfile = await profilesClient.getProfile(
-      updatedFollowee.user.username,
+      followee.user.username,
       follower.user.token
     );
 
@@ -49,16 +39,6 @@ describe('POST /profiles/:username/follow', () => {
   test('given user tries to follow the same user again should return http status code 200 and the profile', async () => {
     const follower = await usersClient.registerRandomUser();
     const followee = await usersClient.registerRandomUser();
-
-    const updateFolloweeData = {
-      bio: faker.lorem.paragraphs(),
-      image: faker.internet.url(),
-    };
-
-    const updatedFollowee = await usersClient.updateUser(
-      followee.user.token,
-      updateFolloweeData
-    );
 
     const followUserResponse1 = await request(app)
       .post(makeFollowUserUrl(followee.user.username))
@@ -75,7 +55,7 @@ describe('POST /profiles/:username/follow', () => {
     expect(followUserResponse2.body).toStrictEqual(followUserResponse1.body);
 
     const gotProfile = await profilesClient.getProfile(
-      updatedFollowee.user.username,
+      followee.user.username,
       follower.user.token
     );
 

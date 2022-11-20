@@ -24,7 +24,7 @@ class ProfilesService {
       following = await this.isFollowing(followerId, user.id);
     }
 
-    return new Profile(user.id, following, user.bio, user.image);
+    return new Profile(user.username, following, user.bio, user.image);
   }
 
   async followUser(followerId: string, followeeId: string): Promise<void> {

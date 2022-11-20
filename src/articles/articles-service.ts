@@ -44,7 +44,7 @@ class ArticlesService {
     let tagList: string[] = [];
 
     if (params.tagList) {
-      tagList = [... new Set(params.tagList.map(tag => slugify(tag)))];
+      tagList = [...new Set(params.tagList.map(tag => slugify(tag)))];
       tagList.sort();
     }
 
@@ -56,7 +56,7 @@ class ArticlesService {
     const articleData = {
       authorId,
       slug,
-      title: params.title,
+      title: params.title.trim(),
       description: params.description,
       body: params.body,
       tagList,
