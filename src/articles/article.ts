@@ -1,5 +1,6 @@
 class Article {
   private _id: string;
+  private _authorId: string;
   private _slug: string;
   private _title: string;
   private _description: string;
@@ -11,6 +12,7 @@ class Article {
 
   constructor(
     id: string,
+    authorId: string,
     slug: string,
     title: string,
     description: string,
@@ -21,6 +23,7 @@ class Article {
     favoritesCount: number
   ) {
     this._id = id;
+    this._authorId = authorId;
     this._slug = slug;
     this._title = title;
     this._description = description;
@@ -33,6 +36,10 @@ class Article {
 
   get id() {
     return this._id;
+  }
+
+  get authorId() {
+    return this._authorId;
   }
 
   get slug() {

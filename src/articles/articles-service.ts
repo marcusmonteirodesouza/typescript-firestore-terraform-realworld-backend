@@ -72,6 +72,35 @@ class ArticlesService {
     return (await this.getArticleBySlug(slug))!;
   }
 
+  async getArticleById(articleId: string) {
+    const articleDoc = await this.firestore
+      .doc(`${this.articlesCollection}/${articleId}`)
+      .get();
+
+    if (!articleDoc.exists) {
+      return undefined;
+    }
+
+    const articleData = articleDoc.data()!;
+
+    const favoritesCount = await this.getFavoritesCount(articleDoc.id);
+
+    const user = new Article(
+      articleDoc.id,
+      articleData.authorId,
+      articleData.slug,
+      articleData.title,
+      articleData.description,
+      articleData.body,
+      articleData.tagList,
+      articleData.createdAt.toDate(),
+      articleData.updatedAt.toDate(),
+      favoritesCount
+    );
+
+    return user;
+  }
+
   async getArticleBySlug(slug: string) {
     const snapshot = await this.firestore
       .collection(this.articlesCollection)
@@ -89,6 +118,7 @@ class ArticlesService {
 
     const user = new Article(
       articleDoc.id,
+      articleData.authorId,
       articleData.slug,
       articleData.title,
       articleData.description,
@@ -100,6 +130,35 @@ class ArticlesService {
     );
 
     return user;
+  }
+
+  async favoriteArticle(articleId: string, userId: string) {
+    if (!(await this.getArticleById(articleId))) {
+      throw new NotFoundError(`article "${articleId}" not found`);
+    }
+
+    if (!(await this.usersService.getUserById(userId))) {
+      throw new NotFoundError(`user "${userId}" not found`);
+    }
+
+    await this.firestore.collection(this.articlesCollection).add({
+      articleId,
+      userId,
+    });
+  }
+
+  async isFavorited(articleId: string, userId: string): Promise<boolean> {
+    const snapshot = await this.firestore
+      .collection(this.favoritesCollection)
+      .where('articleId', '==', articleId)
+      .where('userId', '==', userId)
+      .get();
+
+    if (snapshot.empty) {
+      return false;
+    }
+
+    return true;
   }
 
   async getFavoritesCount(articleId: string) {
