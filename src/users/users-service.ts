@@ -1,10 +1,10 @@
-import {Firestore} from '@google-cloud/firestore';
+import {FieldValue, Firestore} from '@google-cloud/firestore';
 import * as bcrypt from 'bcryptjs';
 import {Joi} from 'celebrate';
 import {AlreadyExistsError, NotFoundError} from '../errors';
 import {User} from './user';
 
-interface UpdateUserData {
+interface UpdateUserParams {
   email?: string;
   username?: string;
   password?: string;
@@ -30,13 +30,25 @@ class UsersService {
 
     const passwordHash = await this.hashPassword(password);
 
-    const document = await this.firestore.collection(this.usersCollection).add({
+    const userData = {
       email,
       username,
       passwordHash,
-    });
+      createdAt: FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp(),
+    };
 
-    const user = new User(document.id, email, username, undefined, undefined);
+    const document = await this.firestore
+      .collection(this.usersCollection)
+      .add(userData);
+
+    const user = new User(
+      document.id,
+      userData.email,
+      userData.username,
+      undefined,
+      undefined
+    );
 
     return user;
   }
@@ -111,51 +123,56 @@ class UsersService {
     return user;
   }
 
-  async updateUser(userId: string, data: UpdateUserData): Promise<User> {
+  async updateUser(userId: string, params: UpdateUserParams): Promise<User> {
     const userDocRef = this.firestore.doc(`${this.usersCollection}/${userId}`);
 
-    const userDoc = await userDocRef.get();
+    return await this.firestore.runTransaction(async t => {
+      const userDoc = await t.get(userDocRef);
 
-    if (!userDoc.exists) {
-      throw new NotFoundError(`user "${userId}" not found`);
-    }
+      if (!userDoc.exists) {
+        throw new NotFoundError(`user "${userId}" not found`);
+      }
 
-    const userData = userDoc.data()!;
+      const userData = userDoc.data()!;
 
-    if (data.email && data.email !== userData.email) {
-      await this.validateEmailOrThrow(data.email);
-      userData.email = data.email;
-    }
+      if (params.email && params.email !== userData.email) {
+        await this.validateEmailOrThrow(params.email);
+        userData.email = params.email;
+      }
 
-    if (data.username && data.username !== userData.username) {
-      await this.validateUsernameOrThrow(data.username);
-      userData.username = data.username;
-    }
+      if (params.username && params.username !== userData.username) {
+        await this.validateUsernameOrThrow(params.username);
+        userData.username = params.username;
+      }
 
-    if (data.password) {
-      await this.validatePasswordOrThrow(data.password);
-      const passwordHash = await this.hashPassword(data.password);
-      userData.passwordHash = passwordHash;
-    }
+      if (params.password) {
+        await this.validatePasswordOrThrow(params.password);
+        const passwordHash = await this.hashPassword(params.password);
+        userData.passwordHash = passwordHash;
+      }
 
-    if (data.bio && data.bio !== userData.bio) {
-      userData.bio = data.bio;
-    }
+      if (params.bio && params.bio !== userData.bio) {
+        userData.bio = params.bio;
+      }
 
-    if (data.image && data.image !== userData.image) {
-      await this.validateImageOrThrow(data.image);
-      userData.image = data.image;
-    }
+      if (params.image && params.image !== userData.image) {
+        await this.validateImageOrThrow(params.image);
+        userData.image = params.image;
+      }
 
-    await userDocRef.update(userData);
+      t.update(userDocRef, {
+        ...userData,
+        updatedAt: FieldValue.serverTimestamp(),
+      });
 
-    return new User(
-      userDoc.id,
-      userData.email,
-      userData.username,
-      userData.bio,
-      userData.image
-    );
+      return new User(
+        userDoc.id,
+        userData.email,
+        userData.username,
+        userData.bio,
+        userData.image
+      );
+    });
   }
 
   async verifyPassword(email: string, password: string): Promise<boolean> {

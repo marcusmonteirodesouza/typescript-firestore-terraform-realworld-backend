@@ -3,7 +3,7 @@ import * as assert from 'node:assert';
 import {faker} from '@faker-js/faker';
 import {app} from '../../src/app';
 
-interface UpdateUserData {
+interface UpdateUserParams {
   email?: string;
   username?: string;
   password?: string;
@@ -38,7 +38,22 @@ class UsersClient {
     const username = faker.internet.userName();
     const password = faker.internet.password();
 
-    return await this.registerUser(email, username, password);
+    const registeredUser = await this.registerUser(email, username, password);
+
+    const updateUserParams = {
+      bio: faker.lorem.paragraphs(),
+      image: faker.internet.url(),
+    };
+
+    const updatedUser = await this.updateUser(
+      registeredUser.user.token,
+      updateUserParams
+    );
+
+    return {
+      ...updatedUser,
+      password,
+    };
   }
 
   async login(email: string, password: string) {
@@ -59,9 +74,9 @@ class UsersClient {
     };
   }
 
-  async updateUser(token: string, updateUserData: UpdateUserData) {
+  async updateUser(token: string, params: UpdateUserParams) {
     const requestBody = {
-      user: updateUserData,
+      user: params,
     };
 
     const response = await request(app)

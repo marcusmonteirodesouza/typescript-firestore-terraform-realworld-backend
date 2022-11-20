@@ -13,16 +13,6 @@ describe('DELETE /profiles/:username/follow', () => {
     const follower = await usersClient.registerRandomUser();
     const followee = await usersClient.registerRandomUser();
 
-    const updateFolloweeData = {
-      bio: faker.lorem.paragraphs(),
-      image: faker.internet.url(),
-    };
-
-    const updatedFollowee = await usersClient.updateUser(
-      followee.user.token,
-      updateFolloweeData
-    );
-
     await profilesClient.followUser(
       follower.user.token,
       followee.user.username
@@ -36,15 +26,15 @@ describe('DELETE /profiles/:username/follow', () => {
     expect(unfollowUserResponse.status).toBe(200);
     expect(unfollowUserResponse.body).toStrictEqual({
       profile: {
-        username: updatedFollowee.user.username,
+        username: followee.user.username,
         following: false,
-        bio: updatedFollowee.user.bio,
-        image: updatedFollowee.user.image,
+        bio: followee.user.bio,
+        image: followee.user.image,
       },
     });
 
     const gotProfile = await profilesClient.getProfile(
-      updatedFollowee.user.username,
+      followee.user.username,
       followee.user.token
     );
 
@@ -55,16 +45,6 @@ describe('DELETE /profiles/:username/follow', () => {
     const follower = await usersClient.registerRandomUser();
     const followee = await usersClient.registerRandomUser();
 
-    const updateFolloweeData = {
-      bio: faker.lorem.paragraphs(),
-      image: faker.internet.url(),
-    };
-
-    const updatedFollowee = await usersClient.updateUser(
-      followee.user.token,
-      updateFolloweeData
-    );
-
     const unfollowUserResponse = await request(app)
       .delete(makeUnfollowUserUrl(followee.user.username))
       .set('authorization', `Token ${follower.user.token}`)
@@ -73,15 +53,15 @@ describe('DELETE /profiles/:username/follow', () => {
     expect(unfollowUserResponse.status).toBe(200);
     expect(unfollowUserResponse.body).toStrictEqual({
       profile: {
-        username: updatedFollowee.user.username,
+        username: followee.user.username,
         following: false,
-        bio: updatedFollowee.user.bio,
-        image: updatedFollowee.user.image,
+        bio: followee.user.bio,
+        image: followee.user.image,
       },
     });
 
     const gotProfile = await profilesClient.getProfile(
-      updatedFollowee.user.username,
+      followee.user.username,
       followee.user.token
     );
 
@@ -91,16 +71,6 @@ describe('DELETE /profiles/:username/follow', () => {
   test('given user tries to unfollow the same user should return http status code 200 and the profile', async () => {
     const follower = await usersClient.registerRandomUser();
     const followee = await usersClient.registerRandomUser();
-
-    const updateFolloweeData = {
-      bio: faker.lorem.paragraphs(),
-      image: faker.internet.url(),
-    };
-
-    const updatedFollowee = await usersClient.updateUser(
-      followee.user.token,
-      updateFolloweeData
-    );
 
     const unfollowUserResponse1 = await request(app)
       .delete(makeUnfollowUserUrl(followee.user.username))
@@ -119,7 +89,7 @@ describe('DELETE /profiles/:username/follow', () => {
     );
 
     const gotProfile = await profilesClient.getProfile(
-      updatedFollowee.user.username,
+      followee.user.username,
       followee.user.token
     );
 

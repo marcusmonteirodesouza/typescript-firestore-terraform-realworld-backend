@@ -5,6 +5,7 @@ import {errorHandler} from './error-handler';
 import {config} from './config';
 import {Auth} from './middleware';
 import {ProfilesRouter, ProfilesService} from './profiles';
+import {ArticlesRouter, ArticlesService} from './articles';
 
 const firestore = new Firestore({
   projectId: config.firestore.projectId,
@@ -19,12 +20,20 @@ const jwtService = new JWTService(usersService, config.jwt.secretKey, {
 
 const profilesService = new ProfilesService(firestore, usersService);
 
+const articlesService = new ArticlesService(firestore, usersService);
+
 const auth = new Auth(jwtService);
 
 const usersRouter = new UsersRouter(auth, usersService, jwtService).router;
 
 const profilesRouter = new ProfilesRouter(auth, usersService, profilesService)
   .router;
+
+const articlesRouter = new ArticlesRouter(
+  auth,
+  articlesService,
+  profilesService
+).router;
 
 const app = express();
 
@@ -33,6 +42,8 @@ app.use(express.json());
 app.use(usersRouter);
 
 app.use(profilesRouter);
+
+app.use(articlesRouter);
 
 app.use(
   async (
