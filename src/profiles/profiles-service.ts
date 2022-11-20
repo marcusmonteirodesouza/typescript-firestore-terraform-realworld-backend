@@ -36,18 +36,6 @@ class ProfilesService {
       return;
     }
 
-    const follower = await this.usersService.getUserById(followerId);
-
-    if (!follower) {
-      throw new NotFoundError(`follower "${followerId}" not found`);
-    }
-
-    const followee = await this.usersService.getUserById(followeeId);
-
-    if (!followee) {
-      throw new NotFoundError(`followee "${followeeId}" not found`);
-    }
-
     await this.firestore.collection(this.followsCollection).add({
       followerId,
       followeeId,
@@ -61,18 +49,6 @@ class ProfilesService {
 
     if (!(await this.isFollowing(followerId, followeeId))) {
       return;
-    }
-
-    const follower = await this.usersService.getUserById(followerId);
-
-    if (!follower) {
-      throw new NotFoundError(`follower "${followerId}" not found`);
-    }
-
-    const followee = await this.usersService.getUserById(followeeId);
-
-    if (!followee) {
-      throw new NotFoundError(`followee "${followeeId}" not found`);
     }
 
     const snapshot = await this.firestore
@@ -91,10 +67,22 @@ class ProfilesService {
   }
 
   async isFollowing(followerId: string, followeeId: string): Promise<boolean> {
+    const follower = await this.usersService.getUserById(followerId);
+
+    if (!follower) {
+      throw new NotFoundError(`follower "${followerId}" not found`);
+    }
+
+    const followee = await this.usersService.getUserById(followeeId);
+
+    if (!followee) {
+      throw new NotFoundError(`followee "${followeeId}" not found`);
+    }
+
     const snapshot = await this.firestore
       .collection(this.followsCollection)
-      .where('followerId', '==', followerId)
-      .where('followeeId', '==', followeeId)
+      .where('followerId', '==', follower.id)
+      .where('followeeId', '==', followee.id)
       .get();
 
     if (snapshot.empty) {

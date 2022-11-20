@@ -86,17 +86,8 @@ class UsersService {
     }
 
     const userDoc = snapshot.docs[0];
-    const userData = userDoc.data();
 
-    const user = new User(
-      userDoc.id,
-      userData.email,
-      userData.username,
-      userData.bio,
-      userData.image
-    );
-
-    return user;
+    return await this.getUserById(userDoc.id);
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
@@ -110,17 +101,8 @@ class UsersService {
     }
 
     const userDoc = snapshot.docs[0];
-    const userData = userDoc.data();
 
-    const user = new User(
-      userDoc.id,
-      userData.email,
-      userData.username,
-      userData.bio,
-      userData.image
-    );
-
-    return user;
+    return await this.getUserById(userDoc.id);
   }
 
   async updateUser(userId: string, params: UpdateUserParams): Promise<User> {

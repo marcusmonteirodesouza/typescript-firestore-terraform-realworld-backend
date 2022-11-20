@@ -126,10 +126,9 @@ class ArticlesRouter {
 
           const {slug} = req.params;
 
-          const article = await this.articlesService.favoriteArticleBySlug(
-            slug,
-            user.id
-          );
+          await this.articlesService.favoriteArticleBySlug(slug, user.id);
+
+          const article = (await this.articlesService.getArticleBySlug(slug))!;
 
           const authorProfile = await this.profilesService.getProfile(
             article.authorId
