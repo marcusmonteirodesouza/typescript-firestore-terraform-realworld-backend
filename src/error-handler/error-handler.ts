@@ -2,7 +2,7 @@ import * as util from 'util';
 import {Response} from 'express';
 import {isCelebrateError} from 'celebrate';
 import {StatusCodes} from 'http-status-codes';
-import {AlreadyExistsError, UnauthorizedError} from '../errors';
+import {AlreadyExistsError, NotFoundError, UnauthorizedError} from '../errors';
 import {JsonWebTokenError} from 'jsonwebtoken';
 
 class ErrorsDto {
@@ -34,19 +34,25 @@ class ErrorHandler {
         .json(new ErrorsDto([error.message]));
     }
 
+    if (error instanceof JsonWebTokenError) {
+      return res
+        .status(StatusCodes.UNAUTHORIZED)
+        .json(new ErrorsDto(['unauthorized']));
+    }
+
     if (error instanceof AlreadyExistsError) {
       return res
         .status(StatusCodes.UNPROCESSABLE_ENTITY)
         .json(new ErrorsDto([error.message]));
     }
 
-    if (error instanceof UnauthorizedError) {
+    if (error instanceof NotFoundError) {
       return res
-        .status(StatusCodes.UNAUTHORIZED)
-        .json(new ErrorsDto(['unauthorized']));
+        .status(StatusCodes.NOT_FOUND)
+        .json(new ErrorsDto([error.message]));
     }
 
-    if (error instanceof JsonWebTokenError) {
+    if (error instanceof UnauthorizedError) {
       return res
         .status(StatusCodes.UNAUTHORIZED)
         .json(new ErrorsDto(['unauthorized']));
