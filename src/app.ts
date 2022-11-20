@@ -4,6 +4,7 @@ import {UsersService, UsersRouter, JWTService} from './users';
 import {errorHandler} from './error-handler';
 import {config} from './config';
 import {Auth} from './middleware';
+import {ProfilesRouter, ProfilesService} from './profiles';
 
 const firestore = new Firestore({
   projectId: config.firestore.projectId,
@@ -16,15 +17,22 @@ const jwtService = new JWTService(usersService, config.jwt.secretKey, {
   secondsToExpiration: config.jwt.secondsToExpiration,
 });
 
+const profilesService = new ProfilesService(firestore, usersService);
+
 const auth = new Auth(jwtService);
 
 const usersRouter = new UsersRouter(auth, usersService, jwtService).router;
+
+const profilesRouter = new ProfilesRouter(auth, usersService, profilesService)
+  .router;
 
 const app = express();
 
 app.use(express.json());
 
 app.use(usersRouter);
+
+app.use(profilesRouter);
 
 app.use(
   async (

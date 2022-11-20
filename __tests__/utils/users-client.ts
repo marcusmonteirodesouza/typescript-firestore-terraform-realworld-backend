@@ -3,6 +3,14 @@ import * as assert from 'node:assert';
 import {faker} from '@faker-js/faker';
 import {app} from '../../src/app';
 
+interface UpdateUserData {
+  email?: string;
+  username?: string;
+  password?: string;
+  bio?: string;
+  image?: string;
+}
+
 class UsersClient {
   constructor() {}
 
@@ -48,6 +56,23 @@ class UsersClient {
     return {
       user: response.body.user,
       password,
+    };
+  }
+
+  async updateUser(token: string, updateUserData: UpdateUserData) {
+    const requestBody = {
+      user: updateUserData,
+    };
+
+    const response = await request(app)
+      .put('/user')
+      .set('authorization', `Token ${token}`)
+      .send(requestBody);
+
+    assert.strictEqual(response.statusCode, 200);
+
+    return {
+      user: response.body.user,
     };
   }
 }
