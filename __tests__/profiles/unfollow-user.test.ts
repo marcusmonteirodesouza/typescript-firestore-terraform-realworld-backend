@@ -4,12 +4,12 @@ import {faker} from '@faker-js/faker';
 import {app} from '../../src/app';
 import {jwt, profilesClient, usersClient} from '../utils';
 
-describe('POST /profiles/:username/follow', () => {
-  function makeFollowUserUrl(username: string) {
+describe('DELETE /profiles/:username/follow', () => {
+  function makeUnfollowUserUrl(username: string) {
     return `/profiles/${username}/follow`;
   }
 
-  test('given a valid request should return http status code 200 and the profile', async () => {
+  test('given a valid request and user is followed should return http status code 200 and the profile', async () => {
     const follower = await usersClient.registerRandomUser();
     const followee = await usersClient.registerRandomUser();
 
@@ -23,16 +23,21 @@ describe('POST /profiles/:username/follow', () => {
       updateFolloweeData
     );
 
-    const followUserResponse = await request(app)
-      .post(makeFollowUserUrl(followee.user.username))
+    await profilesClient.followUser(
+      follower.user.token,
+      followee.user.username
+    );
+
+    const unfollowUserResponse = await request(app)
+      .delete(makeUnfollowUserUrl(followee.user.username))
       .set('authorization', `Token ${follower.user.token}`)
       .send();
 
-    expect(followUserResponse.status).toBe(200);
-    expect(followUserResponse.body).toStrictEqual({
+    expect(unfollowUserResponse.status).toBe(200);
+    expect(unfollowUserResponse.body).toStrictEqual({
       profile: {
         username: updatedFollowee.user.username,
-        following: true,
+        following: false,
         bio: updatedFollowee.user.bio,
         image: updatedFollowee.user.image,
       },
@@ -40,13 +45,13 @@ describe('POST /profiles/:username/follow', () => {
 
     const gotProfile = await profilesClient.getProfile(
       updatedFollowee.user.username,
-      follower.user.token
+      followee.user.token
     );
 
-    expect(followUserResponse.body).toStrictEqual(gotProfile);
+    expect(unfollowUserResponse.body).toStrictEqual(gotProfile);
   });
 
-  test('given user tries to follow the same user again should return http status code 200 and the profile', async () => {
+  test('given a valid request and user is not followed should return http status code 200 and the profile', async () => {
     const follower = await usersClient.registerRandomUser();
     const followee = await usersClient.registerRandomUser();
 
@@ -60,40 +65,79 @@ describe('POST /profiles/:username/follow', () => {
       updateFolloweeData
     );
 
-    const followUserResponse1 = await request(app)
-      .post(makeFollowUserUrl(followee.user.username))
+    const unfollowUserResponse = await request(app)
+      .delete(makeUnfollowUserUrl(followee.user.username))
       .set('authorization', `Token ${follower.user.token}`)
       .send();
 
-    const followUserResponse2 = await request(app)
-      .post(makeFollowUserUrl(followee.user.username))
-      .set('authorization', `Token ${follower.user.token}`)
-      .send();
-
-    expect(followUserResponse1.status).toBe(200);
-    expect(followUserResponse2.status).toBe(200);
-    expect(followUserResponse2.body).toStrictEqual(followUserResponse1.body);
+    expect(unfollowUserResponse.status).toBe(200);
+    expect(unfollowUserResponse.body).toStrictEqual({
+      profile: {
+        username: updatedFollowee.user.username,
+        following: false,
+        bio: updatedFollowee.user.bio,
+        image: updatedFollowee.user.image,
+      },
+    });
 
     const gotProfile = await profilesClient.getProfile(
       updatedFollowee.user.username,
-      follower.user.token
+      followee.user.token
     );
 
-    expect(followUserResponse2.body).toStrictEqual(gotProfile);
+    expect(unfollowUserResponse.body).toStrictEqual(gotProfile);
   });
 
-  test('given user tries to follow ownself should return http status code 422 and an errors object', async () => {
+  test('given user tries to unfollow the same user should return http status code 200 and the profile', async () => {
+    const follower = await usersClient.registerRandomUser();
+    const followee = await usersClient.registerRandomUser();
+
+    const updateFolloweeData = {
+      bio: faker.lorem.paragraphs(),
+      image: faker.internet.url(),
+    };
+
+    const updatedFollowee = await usersClient.updateUser(
+      followee.user.token,
+      updateFolloweeData
+    );
+
+    const unfollowUserResponse1 = await request(app)
+      .delete(makeUnfollowUserUrl(followee.user.username))
+      .set('authorization', `Token ${follower.user.token}`)
+      .send();
+
+    const unfollowUserResponse2 = await request(app)
+      .delete(makeUnfollowUserUrl(followee.user.username))
+      .set('authorization', `Token ${follower.user.token}`)
+      .send();
+
+    expect(unfollowUserResponse1.status).toBe(200);
+    expect(unfollowUserResponse2.status).toBe(200);
+    expect(unfollowUserResponse2.body).toStrictEqual(
+      unfollowUserResponse1.body
+    );
+
+    const gotProfile = await profilesClient.getProfile(
+      updatedFollowee.user.username,
+      followee.user.token
+    );
+
+    expect(unfollowUserResponse2.body).toStrictEqual(gotProfile);
+  });
+
+  test('given user tries to unfollow ownself should return http status code 422 and an errors object', async () => {
     const follower = await usersClient.registerRandomUser();
 
     const response = await request(app)
-      .post(makeFollowUserUrl(follower.user.username))
+      .delete(makeUnfollowUserUrl(follower.user.username))
       .set('authorization', `Token ${follower.user.token}`)
       .send();
 
     expect(response.status).toBe(422);
     expect(response.body).toStrictEqual({
       errors: {
-        body: ['cannot follow ownself'],
+        body: ['cannot unfollow ownself'],
       },
     });
   });
@@ -103,7 +147,7 @@ describe('POST /profiles/:username/follow', () => {
     const followeeUsername = faker.internet.userName();
 
     const response = await request(app)
-      .post(makeFollowUserUrl(followeeUsername))
+      .delete(makeUnfollowUserUrl(followeeUsername))
       .set('authorization', `Token ${follower.user.token}`)
       .send();
 
@@ -119,7 +163,7 @@ describe('POST /profiles/:username/follow', () => {
     const followee = await usersClient.registerRandomUser();
 
     const response = await request(app)
-      .post(makeFollowUserUrl(followee.user.username))
+      .delete(makeUnfollowUserUrl(followee.user.username))
       .send();
 
     expect(response.status).toBe(401);
@@ -135,7 +179,7 @@ describe('POST /profiles/:username/follow', () => {
     const followee = await usersClient.registerRandomUser();
 
     const response = await request(app)
-      .post(makeFollowUserUrl(followee.user.username))
+      .delete(makeUnfollowUserUrl(followee.user.username))
       .set('authorization', `Token ${token}`)
       .send();
 
@@ -155,7 +199,7 @@ describe('POST /profiles/:username/follow', () => {
     const followee = await usersClient.registerRandomUser();
 
     const response = await request(app)
-      .post(makeFollowUserUrl(followee.user.username))
+      .delete(makeUnfollowUserUrl(followee.user.username))
       .set('authorization', `Token ${token}`)
       .send();
 
@@ -177,7 +221,7 @@ describe('POST /profiles/:username/follow', () => {
     const followee = await usersClient.registerRandomUser();
 
     const response = await request(app)
-      .post(makeFollowUserUrl(followee.user.username))
+      .delete(makeUnfollowUserUrl(followee.user.username))
       .set('authorization', `Token ${token}`)
       .send();
 
