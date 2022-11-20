@@ -1,5 +1,6 @@
 import {celebrate, Joi, Segments} from 'celebrate';
 import * as express from 'express';
+import {NotFoundError} from '../errors';
 import {Auth} from '../middleware';
 import {Profile, ProfilesService} from '../profiles';
 import {Article} from './article';
@@ -70,6 +71,73 @@ class ArticlesRouter {
           const articleDto = new ArticleDto(article, false, authorProfile);
 
           return res.status(201).json(articleDto);
+        } catch (err) {
+          return next(err);
+        }
+      }
+    );
+
+    router.get(
+      '/articles/:slug',
+      this.auth.optionalAuth,
+      async (req, res, next) => {
+        try {
+          const {slug} = req.params;
+
+          const article = await this.articlesService.getArticleBySlug(slug);
+
+          if (!article) {
+            throw new NotFoundError(`slug "${slug}" not found`);
+          }
+
+          let authorProfile: Profile;
+          let favorited = false;
+
+          if (req.user) {
+            authorProfile = await this.profilesService.getProfile(
+              article.authorId,
+              req.user.id
+            );
+            favorited = await this.articlesService.isFavorited(
+              article.id,
+              req.user.id
+            );
+          } else {
+            authorProfile = await this.profilesService.getProfile(
+              article.authorId
+            );
+          }
+
+          const articleDto = new ArticleDto(article, favorited, authorProfile);
+
+          return res.json(articleDto);
+        } catch (err) {
+          return next(err);
+        }
+      }
+    );
+
+    router.post(
+      '/articles/:slug/favorite',
+      this.auth.requireAuth,
+      async (req, res, next) => {
+        try {
+          const user = req.user!;
+
+          const {slug} = req.params;
+
+          const article = await this.articlesService.favoriteArticleBySlug(
+            slug,
+            user.id
+          );
+
+          const authorProfile = await this.profilesService.getProfile(
+            article.authorId
+          );
+
+          const articleDto = new ArticleDto(article, true, authorProfile);
+
+          return res.json(articleDto);
         } catch (err) {
           return next(err);
         }

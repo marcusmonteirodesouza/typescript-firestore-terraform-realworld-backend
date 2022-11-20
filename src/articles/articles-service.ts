@@ -89,6 +89,7 @@ class ArticlesService {
 
     const user = new Article(
       articleDoc.id,
+      articleData.authorId,
       articleData.slug,
       articleData.title,
       articleData.description,
@@ -102,7 +103,51 @@ class ArticlesService {
     return user;
   }
 
-  async getFavoritesCount(articleId: string) {
+  async favoriteArticleBySlug(slug: string, userId: string) {
+    const article = await this.getArticleBySlug(slug);
+
+    if (!article) {
+      throw new NotFoundError(`slug "${slug}" not found`);
+    }
+
+    if (!(await this.usersService.getUserById(userId))) {
+      throw new NotFoundError(`user "${userId}" not found`);
+    }
+
+    await this.firestore.collection(this.favoritesCollection).add({
+      articleId: article.id,
+      userId,
+    });
+
+    return new Article(
+      article.id,
+      article.authorId,
+      article.slug,
+      article.title,
+      article.description,
+      article.body,
+      article.tagList,
+      article.createdAt,
+      article.updatedAt,
+      article.favoritesCount + 1
+    );
+  }
+
+  async isFavorited(articleId: string, userId: string): Promise<boolean> {
+    const snapshot = await this.firestore
+      .collection(this.favoritesCollection)
+      .where('articleId', '==', articleId)
+      .where('userId', '==', userId)
+      .get();
+
+    if (snapshot.empty) {
+      return false;
+    }
+
+    return true;
+  }
+
+  private async getFavoritesCount(articleId: string) {
     const snapshot = await this.firestore
       .collection(this.favoritesCollection)
       .where('articleId', '==', articleId)
