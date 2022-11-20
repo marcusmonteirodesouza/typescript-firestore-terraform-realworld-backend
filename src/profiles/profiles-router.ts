@@ -98,6 +98,37 @@ class ProfilesRouter {
       }
     );
 
+    router.delete(
+      '/profiles/:username/follow',
+      this.auth.requireAuth,
+      async (req, res, next) => {
+        try {
+          const follower = req.user!;
+
+          const {username} = req.params;
+
+          const followee = await this.usersService.getUserByUsername(username);
+
+          if (!followee) {
+            throw new NotFoundError(`username "${username}" not found`);
+          }
+
+          await this.profilesService.unfollowUser(follower.id, followee.id);
+
+          const profileDto = new ProfileDto(
+            followee.username,
+            false,
+            followee.bio,
+            followee.image
+          );
+
+          return res.json(profileDto);
+        } catch (err) {
+          return next(err);
+        }
+      }
+    );
+
     return router;
   }
 }

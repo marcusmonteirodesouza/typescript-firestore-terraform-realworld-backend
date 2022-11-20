@@ -28,7 +28,7 @@ class UsersClient {
     assert.strictEqual(response.statusCode, 201);
 
     return {
-      user: response.body.user,
+      ...response.body,
       password,
     };
   }
@@ -54,7 +54,7 @@ class UsersClient {
     assert.strictEqual(response.statusCode, 200);
 
     return {
-      user: response.body.user,
+      ...response.body,
       password,
     };
   }
@@ -71,9 +71,7 @@ class UsersClient {
 
     assert.strictEqual(response.statusCode, 200);
 
-    return {
-      user: response.body.user,
-    };
+    return response.body;
   }
 }
 
