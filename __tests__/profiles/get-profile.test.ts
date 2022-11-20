@@ -2,15 +2,14 @@ import 'jest-extended';
 import * as request from 'supertest';
 import {faker} from '@faker-js/faker';
 import {app} from '../../src/app';
-import {jwt, usersClient} from '../utils';
+import {jwt, profilesClient, usersClient} from '../utils';
 
 describe('POST /profiles/:username/follow', () => {
-  function makeFollowUserUrl(username: string) {
-    return `/profiles/${username}/follow`;
+  function makeGetProfileUrl(username: string) {
+    return `/profiles/${username}`;
   }
 
-  test('given a valid request should return http status code 200 and the profile', async () => {
-    const follower = await usersClient.registerRandomUser();
+  test('given no token should return http status code 200 and the profile', async () => {
     const followee = await usersClient.registerRandomUser();
 
     const updateFolloweeData = {
@@ -24,7 +23,41 @@ describe('POST /profiles/:username/follow', () => {
     );
 
     const response = await request(app)
-      .post(makeFollowUserUrl(followee.user.username))
+      .get(makeGetProfileUrl(followee.user.username))
+      .send();
+
+    expect(response.status).toBe(200);
+    expect(response.body).toStrictEqual({
+      profile: {
+        username: updatedFollowee.user.username,
+        following: false,
+        bio: updatedFollowee.user.bio,
+        image: updatedFollowee.user.image,
+      },
+    });
+  });
+
+  test('given token and user is followed should return http status code 200 and the profile', async () => {
+    const follower = await usersClient.registerRandomUser();
+    const followee = await usersClient.registerRandomUser();
+
+    const updateFolloweeData = {
+      bio: faker.lorem.paragraphs(),
+      image: faker.internet.url(),
+    };
+
+    const updatedFollowee = await usersClient.updateUser(
+      followee.user.token,
+      updateFolloweeData
+    );
+
+    await profilesClient.followUser(
+      follower.user.token,
+      followee.user.username
+    );
+
+    const response = await request(app)
+      .get(makeGetProfileUrl(followee.user.username))
       .set('authorization', `Token ${follower.user.token}`)
       .send();
 
@@ -39,29 +72,41 @@ describe('POST /profiles/:username/follow', () => {
     });
   });
 
-  test('given user tries to follow ownself should return http status code 422 and an errors object', async () => {
+  test('given token and user is not followed should return http status code 200 and the profile', async () => {
     const follower = await usersClient.registerRandomUser();
+    const followee = await usersClient.registerRandomUser();
+
+    const updateFolloweeData = {
+      bio: faker.lorem.paragraphs(),
+      image: faker.internet.url(),
+    };
+
+    const updatedFollowee = await usersClient.updateUser(
+      followee.user.token,
+      updateFolloweeData
+    );
 
     const response = await request(app)
-      .post(makeFollowUserUrl(follower.user.username))
+      .get(makeGetProfileUrl(followee.user.username))
       .set('authorization', `Token ${follower.user.token}`)
       .send();
 
-    expect(response.status).toBe(422);
+    expect(response.status).toBe(200);
     expect(response.body).toStrictEqual({
-      errors: {
-        body: ['cannot follow ownself'],
+      profile: {
+        username: updatedFollowee.user.username,
+        following: false,
+        bio: updatedFollowee.user.bio,
+        image: updatedFollowee.user.image,
       },
     });
   });
 
   test('given followee is not found should return http status code 404 and an errors object', async () => {
-    const follower = await usersClient.registerRandomUser();
     const followeeUsername = faker.internet.userName();
 
     const response = await request(app)
-      .post(makeFollowUserUrl(followeeUsername))
-      .set('authorization', `Token ${follower.user.token}`)
+      .get(makeGetProfileUrl(followeeUsername))
       .send();
 
     expect(response.status).toBe(404);
@@ -72,27 +117,12 @@ describe('POST /profiles/:username/follow', () => {
     });
   });
 
-  test('given no authorization header is set should return http status code 401 and an errors object', async () => {
-    const followee = await usersClient.registerRandomUser();
-
-    const response = await request(app)
-      .post(makeFollowUserUrl(followee.user.username))
-      .send();
-
-    expect(response.status).toBe(401);
-    expect(response.body).toStrictEqual({
-      errors: {
-        body: ['unauthorized'],
-      },
-    });
-  });
-
   test('given user is not found should return http status code 401 and an errors object', async () => {
     const token = jwt.getRandomToken();
     const followee = await usersClient.registerRandomUser();
 
     const response = await request(app)
-      .post(makeFollowUserUrl(followee.user.username))
+      .get(makeGetProfileUrl(followee.user.username))
       .set('authorization', `Token ${token}`)
       .send();
 
@@ -112,7 +142,7 @@ describe('POST /profiles/:username/follow', () => {
     const followee = await usersClient.registerRandomUser();
 
     const response = await request(app)
-      .post(makeFollowUserUrl(followee.user.username))
+      .get(makeGetProfileUrl(followee.user.username))
       .set('authorization', `Token ${token}`)
       .send();
 
@@ -134,7 +164,7 @@ describe('POST /profiles/:username/follow', () => {
     const followee = await usersClient.registerRandomUser();
 
     const response = await request(app)
-      .post(makeFollowUserUrl(followee.user.username))
+      .get(makeGetProfileUrl(followee.user.username))
       .set('authorization', `Token ${token}`)
       .send();
 
