@@ -1,6 +1,7 @@
 import {Firestore} from '@google-cloud/firestore';
 import {NotFoundError} from '../errors';
 import {UsersService} from '../users';
+import {Profile} from './profile';
 
 class ProfilesService {
   private followsCollection = 'follows';
@@ -9,6 +10,22 @@ class ProfilesService {
     private firestore: Firestore,
     private usersService: UsersService
   ) {}
+
+  async getProfile(userId: string, followerId?: string): Promise<Profile> {
+    const user = await this.usersService.getUserById(userId);
+
+    if (!user) {
+      throw new NotFoundError(`user "${userId}" not found`);
+    }
+
+    let following = false;
+
+    if (followerId) {
+      following = await this.isFollowing(followerId, user.id);
+    }
+
+    return new Profile(user.id, following, user.bio, user.image);
+  }
 
   async followUser(followerId: string, followeeId: string): Promise<void> {
     if (followerId === followeeId) {
