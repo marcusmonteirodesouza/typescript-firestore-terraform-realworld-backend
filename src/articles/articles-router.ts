@@ -87,7 +87,7 @@ class ArticlesRouter {
           const article = await this.articlesService.getArticleBySlug(slug);
 
           if (!article) {
-            throw new NotFoundError(`article "${slug}" not found`);
+            throw new NotFoundError(`slug "${slug}" not found`);
           }
 
           let authorProfile: Profile;
@@ -126,13 +126,10 @@ class ArticlesRouter {
 
           const {slug} = req.params;
 
-          const article = await this.articlesService.getArticleBySlug(slug);
-
-          if (!article) {
-            throw new NotFoundError(`article "${slug}" not found`);
-          }
-
-          await this.articlesService.favoriteArticle(article.id, user.id);
+          const article = await this.articlesService.favoriteArticleBySlug(
+            slug,
+            user.id
+          );
 
           const authorProfile = await this.profilesService.getProfile(
             article.authorId

@@ -72,35 +72,6 @@ class ArticlesService {
     return (await this.getArticleBySlug(slug))!;
   }
 
-  async getArticleById(articleId: string) {
-    const articleDoc = await this.firestore
-      .doc(`${this.articlesCollection}/${articleId}`)
-      .get();
-
-    if (!articleDoc.exists) {
-      return undefined;
-    }
-
-    const articleData = articleDoc.data()!;
-
-    const favoritesCount = await this.getFavoritesCount(articleDoc.id);
-
-    const user = new Article(
-      articleDoc.id,
-      articleData.authorId,
-      articleData.slug,
-      articleData.title,
-      articleData.description,
-      articleData.body,
-      articleData.tagList,
-      articleData.createdAt.toDate(),
-      articleData.updatedAt.toDate(),
-      favoritesCount
-    );
-
-    return user;
-  }
-
   async getArticleBySlug(slug: string) {
     const snapshot = await this.firestore
       .collection(this.articlesCollection)
@@ -132,19 +103,34 @@ class ArticlesService {
     return user;
   }
 
-  async favoriteArticle(articleId: string, userId: string) {
-    if (!(await this.getArticleById(articleId))) {
-      throw new NotFoundError(`article "${articleId}" not found`);
+  async favoriteArticleBySlug(slug: string, userId: string) {
+    const article = await this.getArticleBySlug(slug);
+
+    if (!article) {
+      throw new NotFoundError(`slug "${slug}" not found`);
     }
 
     if (!(await this.usersService.getUserById(userId))) {
       throw new NotFoundError(`user "${userId}" not found`);
     }
 
-    await this.firestore.collection(this.articlesCollection).add({
-      articleId,
+    await this.firestore.collection(this.favoritesCollection).add({
+      articleId: article.id,
       userId,
     });
+
+    return new Article(
+      article.id,
+      article.authorId,
+      article.slug,
+      article.title,
+      article.description,
+      article.body,
+      article.tagList,
+      article.createdAt,
+      article.updatedAt,
+      article.favoritesCount + 1
+    );
   }
 
   async isFavorited(articleId: string, userId: string): Promise<boolean> {
@@ -161,7 +147,7 @@ class ArticlesService {
     return true;
   }
 
-  async getFavoritesCount(articleId: string) {
+  private async getFavoritesCount(articleId: string) {
     const snapshot = await this.firestore
       .collection(this.favoritesCollection)
       .where('articleId', '==', articleId)

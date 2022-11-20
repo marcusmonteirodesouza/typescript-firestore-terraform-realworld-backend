@@ -10,24 +10,44 @@ describe('POST /articles/:slug/favorite', () => {
     return `/articles/${slug}/favorite`;
   }
 
-  test('given a valid request should return http status code 200 and the article', async () => {
-    const user = await usersClient.registerRandomUser();
+  describe('given a valid request', () => {
+    test('should return http status code 200 and the article', async () => {
+      const user1 = await usersClient.registerRandomUser();
 
-    const author = await usersClient.registerRandomUser();
+      const user2 = await usersClient.registerRandomUser();
 
-    const article = await articlesClient.createRandomArticle(author.user.token);
+      const author = await usersClient.registerRandomUser();
 
-    const favoriteArticleResponse = await request(app)
-      .post(makeFavoriteArticleUrl(article.article.slug))
-      .set('authorization', `Token ${user.user.token}`)
-      .send();
+      const article = await articlesClient.createRandomArticle(
+        author.user.token
+      );
 
-    expect(favoriteArticleResponse.status).toBe(200);
-    expect(favoriteArticleResponse.body).toStrictEqual({
-      article: {
-        ...article.article,
-        favorited: true,
-      },
+      const favoriteArticleResponse1 = await request(app)
+        .post(makeFavoriteArticleUrl(article.article.slug))
+        .set('authorization', `Token ${user1.user.token}`)
+        .send();
+
+      expect(favoriteArticleResponse1.status).toBe(200);
+      expect(favoriteArticleResponse1.body).toStrictEqual({
+        article: {
+          ...article.article,
+          favoritesCount: 1,
+          favorited: true,
+        },
+      });
+
+      const favoriteArticleResponse2 = await request(app)
+        .post(makeFavoriteArticleUrl(article.article.slug))
+        .set('authorization', `Token ${user2.user.token}`)
+        .send();
+
+      expect(favoriteArticleResponse2.status).toBe(200);
+      expect(favoriteArticleResponse2.body).toStrictEqual({
+        article: {
+          ...favoriteArticleResponse1.body.article,
+          favoritesCount: 2,
+        },
+      });
     });
   });
 
@@ -44,71 +64,101 @@ describe('POST /articles/:slug/favorite', () => {
     expect(favoriteArticleResponse.status).toBe(404);
     expect(favoriteArticleResponse.body).toStrictEqual({
       errors: {
-        body: [`article "${slug}" not found`],
+        body: [`slug "${slug}" not found`],
       },
     });
   });
 
-  test('given no authorization header is set should return http status code 401 and an errors object', async () => {
-    const author = await usersClient.registerRandomUser();
+  describe('authentication errors', () => {
+    test('given no authentication should return http status code 401 and an errors object', async () => {
+      const author = await usersClient.registerRandomUser();
 
-    const article = await articlesClient.createRandomArticle(author.user.token);
+      const article = await articlesClient.createRandomArticle(
+        author.user.token
+      );
 
-    const favoriteArticleResponse = await request(app)
-      .post(makeFavoriteArticleUrl(article.article.slug))
-      .send();
+      const favoriteArticleResponse = await request(app)
+        .post(makeFavoriteArticleUrl(article.article.slug))
+        .send();
 
-    expect(favoriteArticleResponse.status).toBe(401);
-    expect(favoriteArticleResponse.body).toStrictEqual({
-      errors: {
-        body: ['unauthorized'],
-      },
+      expect(favoriteArticleResponse.status).toBe(401);
+      expect(favoriteArticleResponse.body).toStrictEqual({
+        errors: {
+          body: ['unauthorized'],
+        },
+      });
     });
-  });
 
-  test('given token has wrong issuer should return http status code 401 and an errors object', async () => {
-    const issuer = faker.internet.url();
+    test('given user is not found should return http status code 401 and an errors object', async () => {
+      const token = jwt.getRandomToken();
 
-    const token = jwt.getRandomToken({issuer});
+      const author = await usersClient.registerRandomUser();
 
-    const author = await usersClient.registerRandomUser();
+      const article = await articlesClient.createRandomArticle(
+        author.user.token
+      );
 
-    const article = await articlesClient.createRandomArticle(author.user.token);
+      const favoriteArticleResponse = await request(app)
+        .post(makeFavoriteArticleUrl(article.article.slug))
+        .set('authorization', `Token ${token}`)
+        .send();
 
-    const favoriteArticleResponse = await request(app)
-      .post(makeFavoriteArticleUrl(article.article.slug))
-      .set('authorization', `Token ${token}`)
-      .send();
-
-    expect(favoriteArticleResponse.status).toBe(401);
-    expect(favoriteArticleResponse.body).toStrictEqual({
-      errors: {
-        body: ['unauthorized'],
-      },
+      expect(favoriteArticleResponse.status).toBe(401);
+      expect(favoriteArticleResponse.body).toStrictEqual({
+        errors: {
+          body: ['unauthorized'],
+        },
+      });
     });
-  });
 
-  test('given token is expired should return http status code 401 and an errors object', async () => {
-    const expiresInSeconds = 1;
+    test('given token has wrong issuer should return http status code 401 and an errors object', async () => {
+      const issuer = faker.internet.url();
 
-    const token = jwt.getRandomToken({expiresInSeconds});
+      const token = jwt.getRandomToken({issuer});
 
-    await new Promise(r => setTimeout(r, expiresInSeconds * 1000 + 1));
+      const author = await usersClient.registerRandomUser();
 
-    const author = await usersClient.registerRandomUser();
+      const article = await articlesClient.createRandomArticle(
+        author.user.token
+      );
 
-    const article = await articlesClient.createRandomArticle(author.user.token);
+      const favoriteArticleResponse = await request(app)
+        .post(makeFavoriteArticleUrl(article.article.slug))
+        .set('authorization', `Token ${token}`)
+        .send();
 
-    const favoriteArticleResponse = await request(app)
-      .post(makeFavoriteArticleUrl(article.article.slug))
-      .set('authorization', `Token ${token}`)
-      .send();
+      expect(favoriteArticleResponse.status).toBe(401);
+      expect(favoriteArticleResponse.body).toStrictEqual({
+        errors: {
+          body: ['unauthorized'],
+        },
+      });
+    });
 
-    expect(favoriteArticleResponse.status).toBe(401);
-    expect(favoriteArticleResponse.body).toStrictEqual({
-      errors: {
-        body: ['unauthorized'],
-      },
+    test('given token is expired should return http status code 401 and an errors object', async () => {
+      const expiresInSeconds = 1;
+
+      const token = jwt.getRandomToken({expiresInSeconds});
+
+      await new Promise(r => setTimeout(r, expiresInSeconds * 1000 + 1));
+
+      const author = await usersClient.registerRandomUser();
+
+      const article = await articlesClient.createRandomArticle(
+        author.user.token
+      );
+
+      const favoriteArticleResponse = await request(app)
+        .post(makeFavoriteArticleUrl(article.article.slug))
+        .set('authorization', `Token ${token}`)
+        .send();
+
+      expect(favoriteArticleResponse.status).toBe(401);
+      expect(favoriteArticleResponse.body).toStrictEqual({
+        errors: {
+          body: ['unauthorized'],
+        },
+      });
     });
   });
 });
