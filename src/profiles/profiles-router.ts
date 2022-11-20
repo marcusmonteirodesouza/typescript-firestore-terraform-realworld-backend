@@ -47,11 +47,46 @@ class ProfilesRouter {
             throw new NotFoundError(`username "${username}" not found`);
           }
 
-          this.profilesService.followUser(follower.id, followee.id);
+          await this.profilesService.followUser(follower.id, followee.id);
 
           const profileDto = new ProfileDto(
             followee.username,
             true,
+            followee.bio,
+            followee.image
+          );
+
+          return res.json(profileDto);
+        } catch (err) {
+          return next(err);
+        }
+      }
+    );
+
+    router.get(
+      '/profiles/:username',
+      this.auth.optionalAuth,
+      async (req, res, next) => {
+        try {
+          const {username} = req.params;
+
+          const followee = await this.usersService.getUserByUsername(username);
+
+          if (!followee) {
+            throw new NotFoundError(`username "${username}" not found`);
+          }
+
+          let isFollowing = false;
+          if (req.user) {
+            isFollowing = await this.profilesService.isFollowing(
+              req.user.id,
+              followee.id
+            );
+          }
+
+          const profileDto = new ProfileDto(
+            followee.username,
+            isFollowing,
             followee.bio,
             followee.image
           );

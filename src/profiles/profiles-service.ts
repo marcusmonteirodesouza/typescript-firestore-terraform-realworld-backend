@@ -11,6 +11,10 @@ class ProfilesService {
   ) {}
 
   async followUser(followerId: string, followeeId: string): Promise<void> {
+    if (followerId === followeeId) {
+      throw new RangeError('cannot follow ownself');
+    }
+
     if (await this.isFollowing(followerId, followeeId)) {
       return;
     }
