@@ -19,12 +19,12 @@ describe('GET /articles/:slug', () => {
           author.user.token
         );
 
-        const getArticleResponse = await request(app)
+        const response = await request(app)
           .get(makeGetArticleUrl(article.article.slug))
           .send();
 
-        expect(getArticleResponse.status).toBe(200);
-        expect(getArticleResponse.body).toStrictEqual({
+        expect(response.status).toBe(200);
+        expect(response.body).toStrictEqual({
           article: {
             ...article.article,
             favorited: false,
@@ -57,13 +57,13 @@ describe('GET /articles/:slug', () => {
               article.article.slug
             );
 
-            const getArticleResponse = await request(app)
+            const response = await request(app)
               .get(makeGetArticleUrl(article.article.slug))
               .set('authorization', `Token ${user1.user.token}`)
               .send();
 
-            expect(getArticleResponse.status).toBe(200);
-            expect(getArticleResponse.body).toStrictEqual({
+            expect(response.status).toBe(200);
+            expect(response.body).toStrictEqual({
               article: {
                 ...article.article,
                 favoritesCount: 1,
@@ -91,13 +91,13 @@ describe('GET /articles/:slug', () => {
               author.user.username
             );
 
-            const getArticleResponse = await request(app)
+            const response = await request(app)
               .get(makeGetArticleUrl(article.article.slug))
               .set('authorization', `Token ${user1.user.token}`)
               .send();
 
-            expect(getArticleResponse.status).toBe(200);
-            expect(getArticleResponse.body).toStrictEqual({
+            expect(response.status).toBe(200);
+            expect(response.body).toStrictEqual({
               article: {
                 ...article.article,
                 favoritesCount: 0,
@@ -129,13 +129,13 @@ describe('GET /articles/:slug', () => {
               article.article.slug
             );
 
-            const getArticleResponse = await request(app)
+            const response = await request(app)
               .get(makeGetArticleUrl(article.article.slug))
               .set('authorization', `Token ${user1.user.token}`)
               .send();
 
-            expect(getArticleResponse.status).toBe(200);
-            expect(getArticleResponse.body).toStrictEqual({
+            expect(response.status).toBe(200);
+            expect(response.body).toStrictEqual({
               article: {
                 ...article.article,
                 favoritesCount: 1,
@@ -158,13 +158,13 @@ describe('GET /articles/:slug', () => {
               author.user.token
             );
 
-            const getArticleResponse = await request(app)
+            const response = await request(app)
               .get(makeGetArticleUrl(article.article.slug))
               .set('authorization', `Token ${user1.user.token}`)
               .send();
 
-            expect(getArticleResponse.status).toBe(200);
-            expect(getArticleResponse.body).toStrictEqual({
+            expect(response.status).toBe(200);
+            expect(response.body).toStrictEqual({
               article: {
                 ...article.article,
                 favoritesCount: 0,
@@ -183,12 +183,10 @@ describe('GET /articles/:slug', () => {
   test('given article does not exist should return http status code 404 and an errors object', async () => {
     const slug = slugify(faker.lorem.sentence());
 
-    const getArticleResponse = await request(app)
-      .get(makeGetArticleUrl(slug))
-      .send();
+    const response = await request(app).get(makeGetArticleUrl(slug)).send();
 
-    expect(getArticleResponse.status).toBe(404);
-    expect(getArticleResponse.body).toStrictEqual({
+    expect(response.status).toBe(404);
+    expect(response.body).toStrictEqual({
       errors: {
         body: [`slug "${slug}" not found`],
       },
@@ -205,13 +203,13 @@ describe('GET /articles/:slug', () => {
         author.user.token
       );
 
-      const getArticleResponse = await request(app)
+      const response = await request(app)
         .get(makeGetArticleUrl(article.article.slug))
         .set('authorization', `Token ${token}`)
         .send();
 
-      expect(getArticleResponse.status).toBe(401);
-      expect(getArticleResponse.body).toStrictEqual({
+      expect(response.status).toBe(401);
+      expect(response.body).toStrictEqual({
         errors: {
           body: ['unauthorized'],
         },
@@ -229,13 +227,13 @@ describe('GET /articles/:slug', () => {
         author.user.token
       );
 
-      const getArticleResponse = await request(app)
+      const response = await request(app)
         .get(makeGetArticleUrl(article.article.slug))
         .set('authorization', `Token ${token}`)
         .send();
 
-      expect(getArticleResponse.status).toBe(401);
-      expect(getArticleResponse.body).toStrictEqual({
+      expect(response.status).toBe(401);
+      expect(response.body).toStrictEqual({
         errors: {
           body: ['unauthorized'],
         },
@@ -255,13 +253,13 @@ describe('GET /articles/:slug', () => {
         author.user.token
       );
 
-      const getArticleResponse = await request(app)
+      const response = await request(app)
         .get(makeGetArticleUrl(article.article.slug))
         .set('authorization', `Token ${token}`)
         .send();
 
-      expect(getArticleResponse.status).toBe(401);
-      expect(getArticleResponse.body).toStrictEqual({
+      expect(response.status).toBe(401);
+      expect(response.body).toStrictEqual({
         errors: {
           body: ['unauthorized'],
         },

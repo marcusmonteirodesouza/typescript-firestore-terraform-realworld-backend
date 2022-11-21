@@ -56,13 +56,13 @@ describe('POST /articles/:slug/favorite', () => {
 
     const slug = slugify(faker.lorem.sentence());
 
-    const favoriteArticleResponse = await request(app)
+    const response = await request(app)
       .post(makeFavoriteArticleUrl(slug))
       .set('authorization', `Token ${user.user.token}`)
       .send();
 
-    expect(favoriteArticleResponse.status).toBe(404);
-    expect(favoriteArticleResponse.body).toStrictEqual({
+    expect(response.status).toBe(404);
+    expect(response.body).toStrictEqual({
       errors: {
         body: [`slug "${slug}" not found`],
       },
@@ -77,12 +77,12 @@ describe('POST /articles/:slug/favorite', () => {
         author.user.token
       );
 
-      const favoriteArticleResponse = await request(app)
+      const response = await request(app)
         .post(makeFavoriteArticleUrl(article.article.slug))
         .send();
 
-      expect(favoriteArticleResponse.status).toBe(401);
-      expect(favoriteArticleResponse.body).toStrictEqual({
+      expect(response.status).toBe(401);
+      expect(response.body).toStrictEqual({
         errors: {
           body: ['unauthorized'],
         },
@@ -98,13 +98,13 @@ describe('POST /articles/:slug/favorite', () => {
         author.user.token
       );
 
-      const favoriteArticleResponse = await request(app)
+      const response = await request(app)
         .post(makeFavoriteArticleUrl(article.article.slug))
         .set('authorization', `Token ${token}`)
         .send();
 
-      expect(favoriteArticleResponse.status).toBe(401);
-      expect(favoriteArticleResponse.body).toStrictEqual({
+      expect(response.status).toBe(401);
+      expect(response.body).toStrictEqual({
         errors: {
           body: ['unauthorized'],
         },
@@ -122,13 +122,13 @@ describe('POST /articles/:slug/favorite', () => {
         author.user.token
       );
 
-      const favoriteArticleResponse = await request(app)
+      const response = await request(app)
         .post(makeFavoriteArticleUrl(article.article.slug))
         .set('authorization', `Token ${token}`)
         .send();
 
-      expect(favoriteArticleResponse.status).toBe(401);
-      expect(favoriteArticleResponse.body).toStrictEqual({
+      expect(response.status).toBe(401);
+      expect(response.body).toStrictEqual({
         errors: {
           body: ['unauthorized'],
         },
@@ -148,13 +148,13 @@ describe('POST /articles/:slug/favorite', () => {
         author.user.token
       );
 
-      const favoriteArticleResponse = await request(app)
+      const response = await request(app)
         .post(makeFavoriteArticleUrl(article.article.slug))
         .set('authorization', `Token ${token}`)
         .send();
 
-      expect(favoriteArticleResponse.status).toBe(401);
-      expect(favoriteArticleResponse.body).toStrictEqual({
+      expect(response.status).toBe(401);
+      expect(response.body).toStrictEqual({
         errors: {
           body: ['unauthorized'],
         },

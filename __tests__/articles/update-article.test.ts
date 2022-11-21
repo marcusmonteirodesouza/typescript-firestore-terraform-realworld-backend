@@ -214,10 +214,19 @@ describe('PUT /articles/:slug', () => {
 
     const slug = slugify(faker.lorem.sentence());
 
+    const updateArticleRequestBody = {
+      article: {
+        title: faker.lorem.sentence(),
+        description: faker.lorem.sentences(),
+        body: faker.lorem.paragraphs(),
+        tagList: faker.lorem.words().split(' '),
+      },
+    };
+
     const updateArticleResponse = await request(app)
       .put(makeUpdateArticleUrl(slug))
       .set('authorization', `Token ${user.user.token}`)
-      .send();
+      .send(updateArticleRequestBody);
 
     expect(updateArticleResponse.status).toBe(404);
     expect(updateArticleResponse.body).toStrictEqual({
@@ -272,9 +281,18 @@ describe('PUT /articles/:slug', () => {
         author.user.token
       );
 
+      const updateArticleRequestBody = {
+        article: {
+          title: faker.lorem.sentence(),
+          description: faker.lorem.sentences(),
+          body: faker.lorem.paragraphs(),
+          tagList: faker.lorem.words().split(' '),
+        },
+      };
+
       const updateArticleResponse = await request(app)
         .put(makeUpdateArticleUrl(article.article.slug))
-        .send();
+        .send(updateArticleRequestBody);
 
       expect(updateArticleResponse.status).toBe(401);
       expect(updateArticleResponse.body).toStrictEqual({
@@ -293,10 +311,19 @@ describe('PUT /articles/:slug', () => {
         author.user.token
       );
 
+      const updateArticleRequestBody = {
+        article: {
+          title: faker.lorem.sentence(),
+          description: faker.lorem.sentences(),
+          body: faker.lorem.paragraphs(),
+          tagList: faker.lorem.words().split(' '),
+        },
+      };
+
       const updateArticleResponse = await request(app)
         .put(makeUpdateArticleUrl(article.article.slug))
         .set('authorization', `Token ${token}`)
-        .send();
+        .send(updateArticleRequestBody);
 
       expect(updateArticleResponse.status).toBe(401);
       expect(updateArticleResponse.body).toStrictEqual({
@@ -314,10 +341,19 @@ describe('PUT /articles/:slug', () => {
         author.user.token
       );
 
+      const updateArticleRequestBody = {
+        article: {
+          title: faker.lorem.sentence(),
+          description: faker.lorem.sentences(),
+          body: faker.lorem.paragraphs(),
+          tagList: faker.lorem.words().split(' '),
+        },
+      };
+
       const updateArticleResponse = await request(app)
         .put(makeUpdateArticleUrl(article.article.slug))
         .set('authorization', `Token ${user.user.token}`)
-        .send();
+        .send(updateArticleRequestBody);
 
       expect(updateArticleResponse.status).toBe(401);
       expect(updateArticleResponse.body).toStrictEqual({
@@ -338,10 +374,19 @@ describe('PUT /articles/:slug', () => {
         author.user.token
       );
 
+      const updateArticleRequestBody = {
+        article: {
+          title: faker.lorem.sentence(),
+          description: faker.lorem.sentences(),
+          body: faker.lorem.paragraphs(),
+          tagList: faker.lorem.words().split(' '),
+        },
+      };
+
       const updateArticleResponse = await request(app)
         .put(makeUpdateArticleUrl(article.article.slug))
         .set('authorization', `Token ${token}`)
-        .send();
+        .send(updateArticleRequestBody);
 
       expect(updateArticleResponse.status).toBe(401);
       expect(updateArticleResponse.body).toStrictEqual({
@@ -364,10 +409,19 @@ describe('PUT /articles/:slug', () => {
         author.user.token
       );
 
+      const updateArticleRequestBody = {
+        article: {
+          title: faker.lorem.sentence(),
+          description: faker.lorem.sentences(),
+          body: faker.lorem.paragraphs(),
+          tagList: faker.lorem.words().split(' '),
+        },
+      };
+
       const updateArticleResponse = await request(app)
         .put(makeUpdateArticleUrl(article.article.slug))
         .set('authorization', `Token ${token}`)
-        .send();
+        .send(updateArticleRequestBody);
 
       expect(updateArticleResponse.status).toBe(401);
       expect(updateArticleResponse.body).toStrictEqual({

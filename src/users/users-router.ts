@@ -39,13 +39,17 @@ class UsersRouter {
     router.post(
       '/users',
       celebrate({
-        [Segments.BODY]: Joi.object().keys({
-          user: Joi.object().keys({
-            email: Joi.string().email().required(),
-            username: Joi.string().required(),
-            password: Joi.string().required(),
-          }),
-        }),
+        [Segments.BODY]: Joi.object()
+          .keys({
+            user: Joi.object()
+              .keys({
+                email: Joi.string().email().required(),
+                username: Joi.string().required(),
+                password: Joi.string().required(),
+              })
+              .required(),
+          })
+          .required(),
       }),
       async (req, res, next) => {
         try {
@@ -77,12 +81,16 @@ class UsersRouter {
     router.post(
       '/users/login',
       celebrate({
-        [Segments.BODY]: Joi.object().keys({
-          user: Joi.object().keys({
-            email: Joi.string().email().required(),
-            password: Joi.string().required(),
-          }),
-        }),
+        [Segments.BODY]: Joi.object()
+          .keys({
+            user: Joi.object()
+              .keys({
+                email: Joi.string().email().required(),
+                password: Joi.string().required(),
+              })
+              .required(),
+          })
+          .required(),
       }),
       async (req, res, next) => {
         try {
@@ -144,15 +152,19 @@ class UsersRouter {
     router.put(
       '/user',
       celebrate({
-        [Segments.BODY]: Joi.object().keys({
-          user: Joi.object().keys({
-            email: Joi.string().email(),
-            username: Joi.string(),
-            password: Joi.string(),
-            bio: Joi.string(),
-            image: Joi.string().uri(),
-          }),
-        }),
+        [Segments.BODY]: Joi.object()
+          .keys({
+            user: Joi.object()
+              .keys({
+                email: Joi.string().email(),
+                username: Joi.string(),
+                password: Joi.string(),
+                bio: Joi.string(),
+                image: Joi.string().uri(),
+              })
+              .required(),
+          })
+          .required(),
       }),
       this.auth.requireAuth,
       async (req, res, next) => {

@@ -20,10 +20,10 @@ describe('GET /tags', () => {
         author2.user.token
       );
 
-      const getArticleResponse = await request(app).get(getTagsUrl).send();
+      const response = await request(app).get(getTagsUrl).send();
 
-      expect(getArticleResponse.status).toBe(200);
-      expect(getArticleResponse.body).toStrictEqual({
+      expect(response.status).toBe(200);
+      expect(response.body).toStrictEqual({
         tags: expect.arrayContaining([
           ...article1.article.tagList,
           ...article2.article.tagList,

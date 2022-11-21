@@ -3,6 +3,7 @@ import slugify from 'slugify';
 import {AlreadyExistsError, NotFoundError} from '../errors';
 import {UsersService} from '../users';
 import {Article} from './article';
+import {Comment} from './comment';
 
 interface CreateArticleParams {
   title: string;
@@ -21,6 +22,7 @@ interface UpdateArticleParams {
 class ArticlesService {
   private articlesCollection = 'articles';
   private favoritesCollection = 'favorites';
+  private commentsCollection = 'comments';
 
   constructor(
     private firestore: Firestore,
@@ -62,26 +64,26 @@ class ArticlesService {
       updatedAt: FieldValue.serverTimestamp(),
     };
 
-    await articlesCollection.add(articleData);
+    const articleDocRef = await articlesCollection.add(articleData);
 
-    return (await this.getArticleBySlug(slug))!;
+    return (await this.getArticleById(articleDocRef.id))!;
   }
 
   async getArticleById(articleId: string): Promise<Article | undefined> {
-    const articleDoc = await this.firestore
+    const articleSnapshot = await this.firestore
       .doc(`${this.articlesCollection}/${articleId}`)
       .get();
 
-    if (!articleDoc.exists) {
+    if (!articleSnapshot.exists) {
       return;
     }
 
-    const articleData = articleDoc.data()!;
+    const articleData = articleSnapshot.data()!;
 
-    const favoritesCount = await this.getFavoritesCount(articleDoc.id);
+    const favoritesCount = await this.getFavoritesCount(articleSnapshot.id);
 
     return new Article(
-      articleDoc.id,
+      articleSnapshot.id,
       articleData.authorId,
       articleData.slug,
       articleData.title,
@@ -95,16 +97,16 @@ class ArticlesService {
   }
 
   async getArticleBySlug(slug: string): Promise<Article | undefined> {
-    const snapshot = await this.firestore
+    const articleSnapshot = await this.firestore
       .collection(this.articlesCollection)
       .where('slug', '==', slug)
       .get();
 
-    if (snapshot.empty) {
+    if (articleSnapshot.empty) {
       return undefined;
     }
 
-    const articleDoc = snapshot.docs[0];
+    const articleDoc = articleSnapshot.docs[0];
 
     return await this.getArticleById(articleDoc.id);
   }
@@ -118,13 +120,13 @@ class ArticlesService {
         `${this.articlesCollection}/${articleId}`
       );
 
-      const articleDoc = await t.get(articleDocRef);
+      const articleSnapshot = await t.get(articleDocRef);
 
-      if (!articleDoc.exists) {
+      if (!articleSnapshot.exists) {
         throw new NotFoundError(`article "${articleId}" not found`);
       }
 
-      const articleData = articleDoc.data()!;
+      const articleData = articleSnapshot.data()!;
 
       if (params.title && params.title !== articleData.title) {
         const slug = this.prepareSlug(params.title);
@@ -174,13 +176,13 @@ class ArticlesService {
   }
 
   async listTags(): Promise<string[]> {
-    const snapshot = await this.firestore
+    const listTagsSnapshot = await this.firestore
       .collection(this.articlesCollection)
       .select('tagList')
       .get();
 
     const tags = [
-      ...new Set(snapshot.docs.map(doc => doc.get('tagList')).flat()),
+      ...new Set(listTagsSnapshot.docs.map(doc => doc.get('tagList')).flat()),
     ] as string[];
     tags.sort();
     return tags;
@@ -249,6 +251,69 @@ class ArticlesService {
     }
 
     return true;
+  }
+
+  async getCommentById(commentId: string): Promise<Comment | undefined> {
+    const commentSnapshot = await this.firestore
+      .doc(`${this.commentsCollection}/${commentId}`)
+      .get();
+
+    if (!commentSnapshot.exists) {
+      return;
+    }
+
+    const commentData = commentSnapshot.data()!;
+
+    return new Comment(
+      commentSnapshot.id,
+      commentData.articleId,
+      commentData.authorId,
+      commentData.body,
+      commentData.createdAt.toDate(),
+      commentData.updatedAt.toDate()
+    );
+  }
+
+  async addComment(
+    articleId: string,
+    authorId: string,
+    body: string
+  ): Promise<Comment> {
+    if (!(await this.getArticleById(articleId))) {
+      throw new NotFoundError(`article ${articleId} not found`);
+    }
+
+    if (!(await this.usersService.getUserById(authorId))) {
+      throw new NotFoundError(`user "${authorId}" not found`);
+    }
+
+    const commentData = {
+      articleId,
+      authorId,
+      body,
+      createdAt: FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp(),
+    };
+
+    const commentDocRef = await this.firestore
+      .collection(this.commentsCollection)
+      .add(commentData);
+
+    return (await this.getCommentById(commentDocRef.id))!;
+  }
+
+  async addCommentBySlug(
+    slug: string,
+    authorId: string,
+    body: string
+  ): Promise<Comment> {
+    const article = await this.getArticleBySlug(slug);
+
+    if (!article) {
+      throw new NotFoundError(`slug "${slug}" not found`);
+    }
+
+    return await this.addComment(article.id, authorId, body);
   }
 
   private prepareSlug(title: string): string {

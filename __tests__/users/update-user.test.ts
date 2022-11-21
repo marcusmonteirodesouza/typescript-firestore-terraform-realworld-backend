@@ -399,7 +399,17 @@ describe('PUT /user', () => {
 
   describe('authentication errors', () => {
     test('given no authentication should return http status code 401 and an errors object', async () => {
-      const response = await request(app).put(updateUserUrl).send();
+      const requestBody = {
+        user: {
+          email: faker.internet.email(),
+          username: faker.internet.userName(),
+          password: faker.internet.password(),
+          bio: faker.lorem.paragraphs(),
+          image: faker.internet.url(),
+        },
+      };
+
+      const response = await request(app).put(updateUserUrl).send(requestBody);
 
       expect(response.status).toBe(401);
       expect(response.body).toStrictEqual({
@@ -412,10 +422,20 @@ describe('PUT /user', () => {
     test('given user is not found should return http status code 401 and an errors object', async () => {
       const token = jwt.getRandomToken();
 
+      const requestBody = {
+        user: {
+          email: faker.internet.email(),
+          username: faker.internet.userName(),
+          password: faker.internet.password(),
+          bio: faker.lorem.paragraphs(),
+          image: faker.internet.url(),
+        },
+      };
+
       const response = await request(app)
         .put(updateUserUrl)
         .set('authorization', `Token ${token}`)
-        .send();
+        .send(requestBody);
 
       expect(response.status).toBe(401);
       expect(response.body).toStrictEqual({
@@ -430,10 +450,20 @@ describe('PUT /user', () => {
 
       const token = jwt.getRandomToken({issuer});
 
+      const requestBody = {
+        user: {
+          email: faker.internet.email(),
+          username: faker.internet.userName(),
+          password: faker.internet.password(),
+          bio: faker.lorem.paragraphs(),
+          image: faker.internet.url(),
+        },
+      };
+
       const response = await request(app)
         .put(updateUserUrl)
         .set('authorization', `Token ${token}`)
-        .send();
+        .send(requestBody);
 
       expect(response.status).toBe(401);
       expect(response.body).toStrictEqual({
@@ -450,10 +480,20 @@ describe('PUT /user', () => {
 
       await new Promise(r => setTimeout(r, expiresInSeconds * 1000 + 1));
 
+      const requestBody = {
+        user: {
+          email: faker.internet.email(),
+          username: faker.internet.userName(),
+          password: faker.internet.password(),
+          bio: faker.lorem.paragraphs(),
+          image: faker.internet.url(),
+        },
+      };
+
       const response = await request(app)
         .put(updateUserUrl)
         .set('authorization', `Token ${token}`)
-        .send();
+        .send(requestBody);
 
       expect(response.status).toBe(401);
       expect(response.body).toStrictEqual({
