@@ -136,6 +136,28 @@ class ArticlesService {
     });
   }
 
+  async unfavoriteArticleBySlug(slug: string, userId: string): Promise<void> {
+    const article = await this.getArticleBySlug(slug);
+
+    if (!article) {
+      throw new NotFoundError(`slug "${slug}" not found`);
+    }
+
+    if (!(await this.isFavorited(article.id, userId))) {
+      return;
+    }
+
+    const snapshot = await this.firestore
+      .collection(this.favoritesCollection)
+      .where('articleId', '==', article.id)
+      .where('userId', '==', userId)
+      .get();
+
+    for (const doc of snapshot.docs) {
+      await doc.ref.delete();
+    }
+  }
+
   async isFavorited(articleId: string, userId: string): Promise<boolean> {
     const article = await this.getArticleById(articleId);
 
