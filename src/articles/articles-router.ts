@@ -144,7 +144,7 @@ class ArticlesRouter {
 
           if (author.id !== article.authorId) {
             throw new UnauthorizedError(
-              `user ${author.id} cannot update article ${article.id}`
+              `user ${author.id} unauthorized to update article ${article.id}`
             );
           }
 
@@ -166,6 +166,46 @@ class ArticlesRouter {
           );
 
           return res.json(articleDto);
+        } catch (err) {
+          return next(err);
+        }
+      }
+    );
+
+    router.delete(
+      '/articles/:slug',
+      celebrate({
+        [Segments.BODY]: Joi.object().keys({
+          article: Joi.object().keys({
+            title: Joi.string(),
+            description: Joi.string(),
+            body: Joi.string(),
+            tagList: Joi.array().items(Joi.string()),
+          }),
+        }),
+      }),
+      this.auth.requireAuth,
+      async (req, res, next) => {
+        try {
+          const author = req.user!;
+
+          const {slug} = req.params;
+
+          const article = await this.articlesService.getArticleBySlug(slug);
+
+          if (!article) {
+            throw new NotFoundError(`slug "${slug}" not found`);
+          }
+
+          if (author.id !== article.authorId) {
+            throw new UnauthorizedError(
+              `user ${author.id} unauthorized to delete article ${article.id}`
+            );
+          }
+
+          await this.articlesService.deleteArticleBySlug(slug);
+
+          return res.sendStatus(204);
         } catch (err) {
           return next(err);
         }
