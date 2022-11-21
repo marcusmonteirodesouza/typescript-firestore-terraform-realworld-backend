@@ -54,18 +54,18 @@ class UsersService {
   }
 
   async getUserById(userId: string): Promise<User | undefined> {
-    const userDoc = await this.firestore
+    const userSnapshot = await this.firestore
       .doc(`${this.usersCollection}/${userId}`)
       .get();
 
-    const userData = userDoc.data();
+    const userData = userSnapshot.data();
 
     if (!userData) {
       return undefined;
     }
 
     const user = new User(
-      userDoc.id,
+      userSnapshot.id,
       userData.email,
       userData.username,
       userData.bio,
@@ -76,31 +76,31 @@ class UsersService {
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
-    const snapshot = await this.firestore
+    const userSnapshot = await this.firestore
       .collection(this.usersCollection)
       .where('email', '==', email)
       .get();
 
-    if (snapshot.empty) {
+    if (userSnapshot.empty) {
       return undefined;
     }
 
-    const userDoc = snapshot.docs[0];
+    const userDoc = userSnapshot.docs[0];
 
     return await this.getUserById(userDoc.id);
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    const snapshot = await this.firestore
+    const userSnapshot = await this.firestore
       .collection(this.usersCollection)
       .where('username', '==', username)
       .get();
 
-    if (snapshot.empty) {
+    if (userSnapshot.empty) {
       return undefined;
     }
 
-    const userDoc = snapshot.docs[0];
+    const userDoc = userSnapshot.docs[0];
 
     return await this.getUserById(userDoc.id);
   }
@@ -111,13 +111,13 @@ class UsersService {
         `${this.usersCollection}/${userId}`
       );
 
-      const userDoc = await t.get(userDocRef);
+      const userSnapshot = await t.get(userDocRef);
 
-      if (!userDoc.exists) {
+      if (!userSnapshot.exists) {
         throw new NotFoundError(`user "${userId}" not found`);
       }
 
-      const userData = userDoc.data()!;
+      const userData = userSnapshot.data()!;
 
       if (params.email && params.email !== userData.email) {
         await this.validateEmailOrThrow(params.email);

@@ -13,7 +13,7 @@ describe('POST /articles', () => {
 
       const randomSuffix = faker.random.alphaNumeric(8);
 
-      const createArticleRequestBody = {
+      const requestBody = {
         article: {
           title: ` Tired of falling from the sky? This is how to train your dragon!${randomSuffix} `,
           description: faker.lorem.sentences(),
@@ -22,18 +22,18 @@ describe('POST /articles', () => {
         },
       };
 
-      const createArticleResponse = await request(app)
+      const response = await request(app)
         .post(createArticleUrl)
         .set('authorization', `Token ${author.user.token}`)
-        .send(createArticleRequestBody);
+        .send(requestBody);
 
-      expect(createArticleResponse.status).toBe(201);
-      expect(createArticleResponse.body).toStrictEqual({
+      expect(response.status).toBe(201);
+      expect(response.body).toStrictEqual({
         article: {
           slug: `tired-of-falling-from-the-sky-this-is-how-to-train-your-dragon!${randomSuffix}`,
           title: `Tired of falling from the sky? This is how to train your dragon!${randomSuffix}`,
-          description: createArticleRequestBody.article.description,
-          body: createArticleRequestBody.article.body,
+          description: requestBody.article.description,
+          body: requestBody.article.body,
           tagList: ['a-tag-3', 'tag-2', 'tag1', 'tag4'],
           createdAt: expect.toBeDateString(),
           updatedAt: expect.toBeDateString(),
@@ -54,7 +54,7 @@ describe('POST /articles', () => {
 
       const randomSuffix = faker.random.alphaNumeric(8);
 
-      const createArticleRequestBody = {
+      const requestBody = {
         article: {
           title: ` Tired of falling from the sky? This is how to train your dragon!${randomSuffix} `,
           description: faker.lorem.sentences(),
@@ -62,18 +62,18 @@ describe('POST /articles', () => {
         },
       };
 
-      const createArticleResponse = await request(app)
+      const response = await request(app)
         .post(createArticleUrl)
         .set('authorization', `Token ${author.user.token}`)
-        .send(createArticleRequestBody);
+        .send(requestBody);
 
-      expect(createArticleResponse.status).toBe(201);
-      expect(createArticleResponse.body).toStrictEqual({
+      expect(response.status).toBe(201);
+      expect(response.body).toStrictEqual({
         article: {
           slug: `tired-of-falling-from-the-sky-this-is-how-to-train-your-dragon!${randomSuffix}`,
           title: `Tired of falling from the sky? This is how to train your dragon!${randomSuffix}`,
-          description: createArticleRequestBody.article.description,
-          body: createArticleRequestBody.article.body,
+          description: requestBody.article.description,
+          body: requestBody.article.body,
           tagList: [],
           createdAt: expect.toBeDateString(),
           updatedAt: expect.toBeDateString(),
@@ -94,7 +94,7 @@ describe('POST /articles', () => {
     test('given no title should return http status code 422 and an errors object', async () => {
       const author = await usersClient.registerRandomUser();
 
-      const createArticleRequestBody = {
+      const requestBody = {
         article: {
           description: faker.lorem.sentences(),
           body: faker.lorem.paragraphs(),
@@ -102,13 +102,13 @@ describe('POST /articles', () => {
         },
       };
 
-      const createArticleResponse = await request(app)
+      const response = await request(app)
         .post(createArticleUrl)
         .set('authorization', `Token ${author.user.token}`)
-        .send(createArticleRequestBody);
+        .send(requestBody);
 
-      expect(createArticleResponse.status).toBe(422);
-      expect(createArticleResponse.body).toStrictEqual({
+      expect(response.status).toBe(422);
+      expect(response.body).toStrictEqual({
         errors: {
           body: ['"article.title" is required'],
         },
@@ -124,7 +124,7 @@ describe('POST /articles', () => {
         existingAuthor.user.token
       );
 
-      const createArticleRequestBody = {
+      const requestBody = {
         article: {
           title: existingArticle.article.title,
           description: faker.lorem.sentences(),
@@ -133,13 +133,13 @@ describe('POST /articles', () => {
         },
       };
 
-      const createArticleResponse = await request(app)
+      const response = await request(app)
         .post(createArticleUrl)
         .set('authorization', `Token ${author.user.token}`)
-        .send(createArticleRequestBody);
+        .send(requestBody);
 
-      expect(createArticleResponse.status).toBe(422);
-      expect(createArticleResponse.body).toStrictEqual({
+      expect(response.status).toBe(422);
+      expect(response.body).toStrictEqual({
         errors: {
           body: ['"slug" is taken'],
         },
@@ -151,7 +151,7 @@ describe('POST /articles', () => {
     test('given no description should return http status code 422 and an errors object', async () => {
       const author = await usersClient.registerRandomUser();
 
-      const createArticleRequestBody = {
+      const requestBody = {
         article: {
           title: faker.lorem.sentence(),
           body: faker.lorem.paragraphs(),
@@ -159,13 +159,13 @@ describe('POST /articles', () => {
         },
       };
 
-      const createArticleResponse = await request(app)
+      const response = await request(app)
         .post(createArticleUrl)
         .set('authorization', `Token ${author.user.token}`)
-        .send(createArticleRequestBody);
+        .send(requestBody);
 
-      expect(createArticleResponse.status).toBe(422);
-      expect(createArticleResponse.body).toStrictEqual({
+      expect(response.status).toBe(422);
+      expect(response.body).toStrictEqual({
         errors: {
           body: ['"article.description" is required'],
         },
@@ -177,7 +177,7 @@ describe('POST /articles', () => {
     test('given no body should return http status code 422 and an errors object', async () => {
       const author = await usersClient.registerRandomUser();
 
-      const createArticleRequestBody = {
+      const requestBody = {
         article: {
           title: faker.lorem.sentence(),
           description: faker.lorem.sentences(),
@@ -185,13 +185,13 @@ describe('POST /articles', () => {
         },
       };
 
-      const createArticleResponse = await request(app)
+      const response = await request(app)
         .post(createArticleUrl)
         .set('authorization', `Token ${author.user.token}`)
-        .send(createArticleRequestBody);
+        .send(requestBody);
 
-      expect(createArticleResponse.status).toBe(422);
-      expect(createArticleResponse.body).toStrictEqual({
+      expect(response.status).toBe(422);
+      expect(response.body).toStrictEqual({
         errors: {
           body: ['"article.body" is required'],
         },
@@ -203,7 +203,7 @@ describe('POST /articles', () => {
     test('given no authentication should return http status code 401 and an errors object', async () => {
       const randomSuffix = faker.random.alphaNumeric();
 
-      const createArticleRequestBody = {
+      const requestBody = {
         article: {
           title: ` Tired of falling from the sky? This is how to train your dragon!${randomSuffix} `,
           description: faker.lorem.sentences(),
@@ -211,12 +211,12 @@ describe('POST /articles', () => {
         },
       };
 
-      const createArticleResponse = await request(app)
+      const response = await request(app)
         .post(createArticleUrl)
-        .send(createArticleRequestBody);
+        .send(requestBody);
 
-      expect(createArticleResponse.status).toBe(401);
-      expect(createArticleResponse.body).toStrictEqual({
+      expect(response.status).toBe(401);
+      expect(response.body).toStrictEqual({
         errors: {
           body: ['unauthorized'],
         },
@@ -227,7 +227,7 @@ describe('POST /articles', () => {
       const token = jwt.getRandomToken();
       const randomSuffix = faker.random.alphaNumeric();
 
-      const createArticleRequestBody = {
+      const requestBody = {
         article: {
           title: ` Tired of falling from the sky? This is how to train your dragon!${randomSuffix} `,
           description: faker.lorem.sentences(),
@@ -235,13 +235,13 @@ describe('POST /articles', () => {
         },
       };
 
-      const createArticleResponse = await request(app)
+      const response = await request(app)
         .post(createArticleUrl)
         .set('authorization', `Token ${token}`)
-        .send(createArticleRequestBody);
+        .send(requestBody);
 
-      expect(createArticleResponse.status).toBe(401);
-      expect(createArticleResponse.body).toStrictEqual({
+      expect(response.status).toBe(401);
+      expect(response.body).toStrictEqual({
         errors: {
           body: ['unauthorized'],
         },
@@ -255,7 +255,7 @@ describe('POST /articles', () => {
 
       const randomSuffix = faker.random.alphaNumeric();
 
-      const createArticleRequestBody = {
+      const requestBody = {
         article: {
           title: ` Tired of falling from the sky? This is how to train your dragon!${randomSuffix} `,
           description: faker.lorem.sentences(),
@@ -263,13 +263,13 @@ describe('POST /articles', () => {
         },
       };
 
-      const createArticleResponse = await request(app)
+      const response = await request(app)
         .post(createArticleUrl)
         .set('authorization', `Token ${token}`)
-        .send(createArticleRequestBody);
+        .send(requestBody);
 
-      expect(createArticleResponse.status).toBe(401);
-      expect(createArticleResponse.body).toStrictEqual({
+      expect(response.status).toBe(401);
+      expect(response.body).toStrictEqual({
         errors: {
           body: ['unauthorized'],
         },
@@ -285,7 +285,7 @@ describe('POST /articles', () => {
 
       const randomSuffix = faker.random.alphaNumeric();
 
-      const createArticleRequestBody = {
+      const requestBody = {
         article: {
           title: ` Tired of falling from the sky? This is how to train your dragon!${randomSuffix} `,
           description: faker.lorem.sentences(),
@@ -293,13 +293,13 @@ describe('POST /articles', () => {
         },
       };
 
-      const createArticleResponse = await request(app)
+      const response = await request(app)
         .post(createArticleUrl)
         .set('authorization', `Token ${token}`)
-        .send(createArticleRequestBody);
+        .send(requestBody);
 
-      expect(createArticleResponse.status).toBe(401);
-      expect(createArticleResponse.body).toStrictEqual({
+      expect(response.status).toBe(401);
+      expect(response.body).toStrictEqual({
         errors: {
           body: ['unauthorized'],
         },

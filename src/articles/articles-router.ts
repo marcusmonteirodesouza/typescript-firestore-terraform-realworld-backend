@@ -5,6 +5,7 @@ import {Auth} from '../middleware';
 import {Profile, ProfilesService} from '../profiles';
 import {Article} from './article';
 import {ArticlesService} from './articles-service';
+import {Comment} from './comment';
 
 class ArticleDto {
   public readonly article;
@@ -30,6 +31,25 @@ class ArticleDto {
   }
 }
 
+class CommentDto {
+  public readonly comment;
+
+  constructor(comment: Comment, author: Profile) {
+    this.comment = {
+      id: comment.id,
+      createdAt: comment.createdAt.toISOString(),
+      updatedAt: comment.updatedAt.toISOString(),
+      body: comment.body,
+      author: {
+        username: author.username,
+        bio: author.bio,
+        image: author.image,
+        following: author.following,
+      },
+    };
+  }
+}
+
 class ArticlesRouter {
   constructor(
     private auth: Auth,
@@ -43,14 +63,18 @@ class ArticlesRouter {
     router.post(
       '/articles',
       celebrate({
-        [Segments.BODY]: Joi.object().keys({
-          article: Joi.object().keys({
-            title: Joi.string().required(),
-            description: Joi.string().required(),
-            body: Joi.string().required(),
-            tagList: Joi.array().items(Joi.string()),
-          }),
-        }),
+        [Segments.BODY]: Joi.object()
+          .keys({
+            article: Joi.object()
+              .keys({
+                title: Joi.string().required(),
+                description: Joi.string().required(),
+                body: Joi.string().required(),
+                tagList: Joi.array().items(Joi.string()),
+              })
+              .required(),
+          })
+          .required(),
       }),
       this.auth.requireAuth,
       async (req, res, next) => {
@@ -71,6 +95,73 @@ class ArticlesRouter {
           const articleDto = new ArticleDto(article, false, authorProfile);
 
           return res.status(201).json(articleDto);
+        } catch (err) {
+          return next(err);
+        }
+      }
+    );
+
+    router.post(
+      '/articles/:slug/favorite',
+      this.auth.requireAuth,
+      async (req, res, next) => {
+        try {
+          const user = req.user!;
+
+          const {slug} = req.params;
+
+          await this.articlesService.favoriteArticleBySlug(slug, user.id);
+
+          const article = (await this.articlesService.getArticleBySlug(slug))!;
+
+          const authorProfile = await this.profilesService.getProfile(
+            article.authorId
+          );
+
+          const articleDto = new ArticleDto(article, true, authorProfile);
+
+          return res.json(articleDto);
+        } catch (err) {
+          return next(err);
+        }
+      }
+    );
+
+    router.post(
+      '/articles/:slug/comments',
+      celebrate({
+        [Segments.BODY]: Joi.object()
+          .keys({
+            comment: Joi.object()
+              .keys({
+                body: Joi.string().required(),
+              })
+              .required(),
+          })
+          .required(),
+      }),
+      this.auth.requireAuth,
+      async (req, res, next) => {
+        try {
+          const author = req.user!;
+
+          const {slug} = req.params;
+
+          const {body} = req.body.comment;
+
+          const comment = await this.articlesService.addCommentBySlug(
+            slug,
+            author.id,
+            body
+          );
+
+          const authorProfile = await this.profilesService.getProfile(
+            author.id
+          );
+
+          const commentDto = new CommentDto(comment, authorProfile);
+
+          return res.status(201).json(commentDto);
         } catch (err) {
           return next(err);
         }
@@ -117,17 +208,31 @@ class ArticlesRouter {
       }
     );
 
+    router.get('/tags', async (req, res, next) => {
+      try {
+        const tags = await this.articlesService.listTags();
+
+        return res.json({tags});
+      } catch (err) {
+        return next(err);
+      }
+    });
+
     router.put(
       '/articles/:slug',
       celebrate({
-        [Segments.BODY]: Joi.object().keys({
-          article: Joi.object().keys({
-            title: Joi.string(),
-            description: Joi.string(),
-            body: Joi.string(),
-            tagList: Joi.array().items(Joi.string()),
-          }),
-        }),
+        [Segments.BODY]: Joi.object()
+          .keys({
+            article: Joi.object()
+              .keys({
+                title: Joi.string(),
+                description: Joi.string(),
+                body: Joi.string(),
+                tagList: Joi.array().items(Joi.string()),
+              })
+              .required(),
+          })
+          .required(),
       }),
       this.auth.requireAuth,
       async (req, res, next) => {
@@ -174,16 +279,6 @@ class ArticlesRouter {
 
     router.delete(
       '/articles/:slug',
-      celebrate({
-        [Segments.BODY]: Joi.object().keys({
-          article: Joi.object().keys({
-            title: Joi.string(),
-            description: Joi.string(),
-            body: Joi.string(),
-            tagList: Joi.array().items(Joi.string()),
-          }),
-        }),
-      }),
       this.auth.requireAuth,
       async (req, res, next) => {
         try {
@@ -206,32 +301,6 @@ class ArticlesRouter {
           await this.articlesService.deleteArticleBySlug(slug);
 
           return res.sendStatus(204);
-        } catch (err) {
-          return next(err);
-        }
-      }
-    );
-
-    router.post(
-      '/articles/:slug/favorite',
-      this.auth.requireAuth,
-      async (req, res, next) => {
-        try {
-          const user = req.user!;
-
-          const {slug} = req.params;
-
-          await this.articlesService.favoriteArticleBySlug(slug, user.id);
-
-          const article = (await this.articlesService.getArticleBySlug(slug))!;
-
-          const authorProfile = await this.profilesService.getProfile(
-            article.authorId
-          );
-
-          const articleDto = new ArticleDto(article, true, authorProfile);
-
-          return res.json(articleDto);
         } catch (err) {
           return next(err);
         }
@@ -263,16 +332,6 @@ class ArticlesRouter {
         }
       }
     );
-
-    router.get('/tags', async (req, res, next) => {
-      try {
-        const tags = await this.articlesService.listTags();
-
-        return res.json({tags});
-      } catch (err) {
-        return next(err);
-      }
-    });
 
     return router;
   }

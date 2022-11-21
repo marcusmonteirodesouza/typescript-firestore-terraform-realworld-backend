@@ -70,13 +70,13 @@ describe('DELETE /articles/:slug/favorite', () => {
         author.user.token
       );
 
-      const unfavoriteArticleResponse = await request(app)
+      const response = await request(app)
         .delete(makeUnfavoriteArticleUrl(article.article.slug))
         .set('authorization', `Token ${user.user.token}`)
         .send();
 
-      expect(unfavoriteArticleResponse.status).toBe(200);
-      expect(unfavoriteArticleResponse.body).toStrictEqual({
+      expect(response.status).toBe(200);
+      expect(response.body).toStrictEqual({
         article: {
           ...article.article,
           favoritesCount: 0,
@@ -91,13 +91,13 @@ describe('DELETE /articles/:slug/favorite', () => {
 
     const slug = slugify(faker.lorem.sentence());
 
-    const unfavoriteArticleResponse = await request(app)
+    const response = await request(app)
       .delete(makeUnfavoriteArticleUrl(slug))
       .set('authorization', `Token ${user.user.token}`)
       .send();
 
-    expect(unfavoriteArticleResponse.status).toBe(404);
-    expect(unfavoriteArticleResponse.body).toStrictEqual({
+    expect(response.status).toBe(404);
+    expect(response.body).toStrictEqual({
       errors: {
         body: [`slug "${slug}" not found`],
       },
@@ -112,12 +112,12 @@ describe('DELETE /articles/:slug/favorite', () => {
         author.user.token
       );
 
-      const unfavoriteArticleResponse = await request(app)
+      const response = await request(app)
         .delete(makeUnfavoriteArticleUrl(article.article.slug))
         .send();
 
-      expect(unfavoriteArticleResponse.status).toBe(401);
-      expect(unfavoriteArticleResponse.body).toStrictEqual({
+      expect(response.status).toBe(401);
+      expect(response.body).toStrictEqual({
         errors: {
           body: ['unauthorized'],
         },
@@ -133,13 +133,13 @@ describe('DELETE /articles/:slug/favorite', () => {
         author.user.token
       );
 
-      const unfavoriteArticleResponse = await request(app)
+      const response = await request(app)
         .delete(makeUnfavoriteArticleUrl(article.article.slug))
         .set('authorization', `Token ${token}`)
         .send();
 
-      expect(unfavoriteArticleResponse.status).toBe(401);
-      expect(unfavoriteArticleResponse.body).toStrictEqual({
+      expect(response.status).toBe(401);
+      expect(response.body).toStrictEqual({
         errors: {
           body: ['unauthorized'],
         },
@@ -157,13 +157,13 @@ describe('DELETE /articles/:slug/favorite', () => {
         author.user.token
       );
 
-      const unfavoriteArticleResponse = await request(app)
+      const response = await request(app)
         .delete(makeUnfavoriteArticleUrl(article.article.slug))
         .set('authorization', `Token ${token}`)
         .send();
 
-      expect(unfavoriteArticleResponse.status).toBe(401);
-      expect(unfavoriteArticleResponse.body).toStrictEqual({
+      expect(response.status).toBe(401);
+      expect(response.body).toStrictEqual({
         errors: {
           body: ['unauthorized'],
         },
@@ -183,13 +183,13 @@ describe('DELETE /articles/:slug/favorite', () => {
         author.user.token
       );
 
-      const unfavoriteArticleResponse = await request(app)
+      const response = await request(app)
         .delete(makeUnfavoriteArticleUrl(article.article.slug))
         .set('authorization', `Token ${token}`)
         .send();
 
-      expect(unfavoriteArticleResponse.status).toBe(401);
-      expect(unfavoriteArticleResponse.body).toStrictEqual({
+      expect(response.status).toBe(401);
+      expect(response.body).toStrictEqual({
         errors: {
           body: ['unauthorized'],
         },
