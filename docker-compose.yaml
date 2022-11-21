@@ -9,6 +9,7 @@ services:
       - FIRESTORE_PROJECT_ID=${FIRESTORE_PROJECT_ID}
       - PORT=${PORT}
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - JWT_ISSUER=${JWT_ISSUER}
       - JWT_SECONDS_TO_EXPIRATION=${JWT_SECONDS_TO_EXPIRATION}
     depends_on:
       firestore_emulator:

@@ -2,7 +2,7 @@ import {Joi} from 'celebrate';
 
 const envVarsSchema = Joi.object()
   .keys({
-    FIRESTORE_EMULATOR_HOST: Joi.string().uri(),
+    FIRESTORE_EMULATOR_HOST: Joi.string(),
     FIRESTORE_PROJECT_ID: Joi.string(),
     PORT: Joi.number().integer().required(),
     JWT_SECRET_KEY: Joi.string().required(),

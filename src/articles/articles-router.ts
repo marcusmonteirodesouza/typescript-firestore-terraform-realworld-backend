@@ -1,6 +1,6 @@
 import {celebrate, Joi, Segments} from 'celebrate';
 import * as express from 'express';
-import {NotFoundError} from '../errors';
+import {NotFoundError, UnauthorizedError} from '../errors';
 import {Auth} from '../middleware';
 import {Profile, ProfilesService} from '../profiles';
 import {Article} from './article';
@@ -109,6 +109,61 @@ class ArticlesRouter {
           }
 
           const articleDto = new ArticleDto(article, favorited, authorProfile);
+
+          return res.json(articleDto);
+        } catch (err) {
+          return next(err);
+        }
+      }
+    );
+
+    router.put(
+      '/articles/:slug',
+      celebrate({
+        [Segments.BODY]: Joi.object().keys({
+          article: Joi.object().keys({
+            title: Joi.string(),
+            description: Joi.string(),
+            body: Joi.string(),
+            tagList: Joi.array().items(Joi.string()),
+          }),
+        }),
+      }),
+      this.auth.requireAuth,
+      async (req, res, next) => {
+        try {
+          const author = req.user!;
+
+          const {slug} = req.params;
+
+          const article = await this.articlesService.getArticleBySlug(slug);
+
+          if (!article) {
+            throw new NotFoundError(`slug "${slug}" not found`);
+          }
+
+          if (author.id !== article.authorId) {
+            throw new UnauthorizedError(
+              `user ${author.id} cannot update article ${article.id}`
+            );
+          }
+
+          const {article: updateArticleParams} = req.body;
+
+          const updatedArticle = await this.articlesService.updateArticle(
+            article.id,
+            updateArticleParams
+          );
+
+          const authorProfile = await this.profilesService.getProfile(
+            author.id
+          );
+
+          const articleDto = new ArticleDto(
+            updatedArticle,
+            false,
+            authorProfile
+          );
 
           return res.json(articleDto);
         } catch (err) {

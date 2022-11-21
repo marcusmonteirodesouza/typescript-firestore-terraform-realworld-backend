@@ -7,7 +7,7 @@ class ArticlesClient {
   constructor() {}
 
   async createRandomArticle(token: string) {
-    const randomSuffix = faker.random.alphaNumeric();
+    const randomSuffix = faker.random.alphaNumeric(8);
 
     const requestBody = {
       article: {
