@@ -161,6 +161,18 @@ class ArticlesService {
     return (await this.getArticleById(articleId))!;
   }
 
+  async deleteArticleBySlug(slug: string): Promise<void> {
+    const article = await this.getArticleBySlug(slug);
+
+    if (!article) {
+      throw new NotFoundError(`slug "${slug}" not found`);
+    }
+
+    await this.firestore
+      .doc(`${this.articlesCollection}/${article.id}`)
+      .delete();
+  }
+
   async listTags(): Promise<string[]> {
     const snapshot = await this.firestore
       .collection(this.articlesCollection)
