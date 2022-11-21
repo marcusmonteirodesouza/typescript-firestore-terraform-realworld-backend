@@ -169,6 +169,16 @@ class ArticlesRouter {
       }
     );
 
+    router.get('/tags', async (req, res, next) => {
+      try {
+        const tags = await this.articlesService.listTags();
+
+        return res.json({tags});
+      } catch (err) {
+        return next(err);
+      }
+    });
+
     return router;
   }
 }

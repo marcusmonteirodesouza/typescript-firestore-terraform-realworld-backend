@@ -119,6 +119,11 @@ class ArticlesService {
     return await this.getArticleById(articleDoc.id);
   }
 
+  async listTags(): Promise<string[]> {
+    const snapshot = await this.firestore.collection(this.tagsCollection).get();
+    return snapshot.docs.map(doc => doc.id);
+  }
+
   async favoriteArticleBySlug(slug: string, userId: string): Promise<void> {
     const article = await this.getArticleBySlug(slug);
 
