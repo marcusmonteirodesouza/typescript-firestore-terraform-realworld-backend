@@ -126,16 +126,41 @@ class ArticlesRouter {
 
           const {slug} = req.params;
 
-          const article = await this.articlesService.favoriteArticleBySlug(
-            slug,
-            user.id
-          );
+          await this.articlesService.favoriteArticleBySlug(slug, user.id);
+
+          const article = (await this.articlesService.getArticleBySlug(slug))!;
 
           const authorProfile = await this.profilesService.getProfile(
             article.authorId
           );
 
           const articleDto = new ArticleDto(article, true, authorProfile);
+
+          return res.json(articleDto);
+        } catch (err) {
+          return next(err);
+        }
+      }
+    );
+
+    router.delete(
+      '/articles/:slug/favorite',
+      this.auth.requireAuth,
+      async (req, res, next) => {
+        try {
+          const user = req.user!;
+
+          const {slug} = req.params;
+
+          await this.articlesService.unfavoriteArticleBySlug(slug, user.id);
+
+          const article = (await this.articlesService.getArticleBySlug(slug))!;
+
+          const authorProfile = await this.profilesService.getProfile(
+            article.authorId
+          );
+
+          const articleDto = new ArticleDto(article, false, authorProfile);
 
           return res.json(articleDto);
         } catch (err) {

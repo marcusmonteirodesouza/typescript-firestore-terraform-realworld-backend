@@ -36,9 +36,11 @@ class ArticlesService {
     }
 
     const batch = this.firestore.batch();
+
     const articlesCollection = this.firestore.collection(
       this.articlesCollection
     );
+
     const tagsCollection = this.firestore.collection(this.tagsCollection);
 
     let tagList: string[] = [];
@@ -65,6 +67,7 @@ class ArticlesService {
     };
 
     const articleDocRef = articlesCollection.doc();
+
     batch.set(articleDocRef, articleData);
 
     await batch.commit();
@@ -72,22 +75,20 @@ class ArticlesService {
     return (await this.getArticleBySlug(slug))!;
   }
 
-  async getArticleBySlug(slug: string) {
-    const snapshot = await this.firestore
-      .collection(this.articlesCollection)
-      .where('slug', '==', slug)
+  async getArticleById(articleId: string): Promise<Article | undefined> {
+    const articleDoc = await this.firestore
+      .doc(`${this.articlesCollection}/${articleId}`)
       .get();
 
-    if (snapshot.empty) {
-      return undefined;
+    if (!articleDoc.exists) {
+      return;
     }
 
-    const articleDoc = snapshot.docs[0];
-    const articleData = articleDoc.data();
+    const articleData = articleDoc.data()!;
 
     const favoritesCount = await this.getFavoritesCount(articleDoc.id);
 
-    const user = new Article(
+    const article = new Article(
       articleDoc.id,
       articleData.authorId,
       articleData.slug,
@@ -100,44 +101,80 @@ class ArticlesService {
       favoritesCount
     );
 
-    return user;
+    return article;
   }
 
-  async favoriteArticleBySlug(slug: string, userId: string) {
+  async getArticleBySlug(slug: string): Promise<Article | undefined> {
+    const snapshot = await this.firestore
+      .collection(this.articlesCollection)
+      .where('slug', '==', slug)
+      .get();
+
+    if (snapshot.empty) {
+      return undefined;
+    }
+
+    const articleDoc = snapshot.docs[0];
+
+    return await this.getArticleById(articleDoc.id);
+  }
+
+  async favoriteArticleBySlug(slug: string, userId: string): Promise<void> {
     const article = await this.getArticleBySlug(slug);
 
     if (!article) {
       throw new NotFoundError(`slug "${slug}" not found`);
     }
 
-    if (!(await this.usersService.getUserById(userId))) {
-      throw new NotFoundError(`user "${userId}" not found`);
+    if (await this.isFavorited(article.id, userId)) {
+      return;
     }
 
     await this.firestore.collection(this.favoritesCollection).add({
       articleId: article.id,
       userId,
     });
+  }
 
-    return new Article(
-      article.id,
-      article.authorId,
-      article.slug,
-      article.title,
-      article.description,
-      article.body,
-      article.tagList,
-      article.createdAt,
-      article.updatedAt,
-      article.favoritesCount + 1
-    );
+  async unfavoriteArticleBySlug(slug: string, userId: string): Promise<void> {
+    const article = await this.getArticleBySlug(slug);
+
+    if (!article) {
+      throw new NotFoundError(`slug "${slug}" not found`);
+    }
+
+    if (!(await this.isFavorited(article.id, userId))) {
+      return;
+    }
+
+    const snapshot = await this.firestore
+      .collection(this.favoritesCollection)
+      .where('articleId', '==', article.id)
+      .where('userId', '==', userId)
+      .get();
+
+    for (const doc of snapshot.docs) {
+      await doc.ref.delete();
+    }
   }
 
   async isFavorited(articleId: string, userId: string): Promise<boolean> {
+    const article = await this.getArticleById(articleId);
+
+    if (!article) {
+      throw new NotFoundError(`article ${articleId} not found`);
+    }
+
+    const user = await this.usersService.getUserById(userId);
+
+    if (!user) {
+      throw new NotFoundError(`user "${userId}" not found`);
+    }
+
     const snapshot = await this.firestore
       .collection(this.favoritesCollection)
-      .where('articleId', '==', articleId)
-      .where('userId', '==', userId)
+      .where('articleId', '==', article.id)
+      .where('userId', '==', user.id)
       .get();
 
     if (snapshot.empty) {
@@ -147,7 +184,7 @@ class ArticlesService {
     return true;
   }
 
-  private async getFavoritesCount(articleId: string) {
+  private async getFavoritesCount(articleId: string): Promise<number> {
     const snapshot = await this.firestore
       .collection(this.favoritesCollection)
       .where('articleId', '==', articleId)
