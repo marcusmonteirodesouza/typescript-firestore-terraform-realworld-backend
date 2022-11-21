@@ -7,9 +7,11 @@ class ArticlesClient {
   constructor() {}
 
   async createRandomArticle(token: string) {
+    const randomSuffix = faker.random.alphaNumeric();
+
     const requestBody = {
       article: {
-        title: faker.lorem.sentence(),
+        title: `${faker.lorem.sentence()}-${randomSuffix}`,
         description: faker.lorem.sentences(),
         body: faker.lorem.paragraphs(),
         tagList: faker.lorem.words().split(' '),
