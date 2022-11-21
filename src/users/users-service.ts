@@ -106,9 +106,11 @@ class UsersService {
   }
 
   async updateUser(userId: string, params: UpdateUserParams): Promise<User> {
-    const userDocRef = this.firestore.doc(`${this.usersCollection}/${userId}`);
+    await this.firestore.runTransaction(async t => {
+      const userDocRef = this.firestore.doc(
+        `${this.usersCollection}/${userId}`
+      );
 
-    return await this.firestore.runTransaction(async t => {
       const userDoc = await t.get(userDocRef);
 
       if (!userDoc.exists) {
@@ -146,15 +148,9 @@ class UsersService {
         ...userData,
         updatedAt: FieldValue.serverTimestamp(),
       });
-
-      return new User(
-        userDoc.id,
-        userData.email,
-        userData.username,
-        userData.bio,
-        userData.image
-      );
     });
+
+    return (await this.getUserById(userId))!;
   }
 
   async verifyPassword(email: string, password: string): Promise<boolean> {

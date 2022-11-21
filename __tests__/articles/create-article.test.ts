@@ -2,7 +2,7 @@ import 'jest-extended';
 import * as request from 'supertest';
 import {faker} from '@faker-js/faker';
 import {app} from '../../src/app';
-import {jwt, usersClient} from '../utils';
+import {articlesClient, jwt, usersClient} from '../utils';
 
 describe('POST /articles', () => {
   const createArticleUrl = '/articles';
@@ -11,14 +11,14 @@ describe('POST /articles', () => {
     test('given all fields are set should return http status code 201 and the article', async () => {
       const author = await usersClient.registerRandomUser();
 
-      const randomSuffix = faker.random.alphaNumeric();
+      const randomSuffix = faker.random.alphaNumeric(8);
 
       const createArticleRequestBody = {
         article: {
           title: ` Tired of falling from the sky? This is how to train your dragon!${randomSuffix} `,
           description: faker.lorem.sentences(),
           body: faker.lorem.paragraphs(),
-          tagList: [' tag1 ', 'tag4', ' tag 2 ', ' a tag 3 '],
+          tagList: [' tag1 ', 'Tag4', ' tag 2 ', 'Tag4', ' a Tag 3 '],
         },
       };
 
@@ -30,7 +30,7 @@ describe('POST /articles', () => {
       expect(createArticleResponse.status).toBe(201);
       expect(createArticleResponse.body).toStrictEqual({
         article: {
-          slug: `Tired-of-falling-from-the-sky-This-is-how-to-train-your-dragon!${randomSuffix}`,
+          slug: `tired-of-falling-from-the-sky-this-is-how-to-train-your-dragon!${randomSuffix}`,
           title: `Tired of falling from the sky? This is how to train your dragon!${randomSuffix}`,
           description: createArticleRequestBody.article.description,
           body: createArticleRequestBody.article.body,
@@ -52,7 +52,7 @@ describe('POST /articles', () => {
     test('given no tagList should return http status code 201 and the article', async () => {
       const author = await usersClient.registerRandomUser();
 
-      const randomSuffix = faker.random.alphaNumeric();
+      const randomSuffix = faker.random.alphaNumeric(8);
 
       const createArticleRequestBody = {
         article: {
@@ -70,7 +70,7 @@ describe('POST /articles', () => {
       expect(createArticleResponse.status).toBe(201);
       expect(createArticleResponse.body).toStrictEqual({
         article: {
-          slug: `Tired-of-falling-from-the-sky-This-is-how-to-train-your-dragon!${randomSuffix}`,
+          slug: `tired-of-falling-from-the-sky-this-is-how-to-train-your-dragon!${randomSuffix}`,
           title: `Tired of falling from the sky? This is how to train your dragon!${randomSuffix}`,
           description: createArticleRequestBody.article.description,
           body: createArticleRequestBody.article.body,
@@ -111,6 +111,37 @@ describe('POST /articles', () => {
       expect(createArticleResponse.body).toStrictEqual({
         errors: {
           body: ['"article.title" is required'],
+        },
+      });
+    });
+
+    test('given title results in taken slug should return http status code 422 and an errors object', async () => {
+      const author = await usersClient.registerRandomUser();
+
+      const existingAuthor = await usersClient.registerRandomUser();
+
+      const existingArticle = await articlesClient.createRandomArticle(
+        existingAuthor.user.token
+      );
+
+      const createArticleRequestBody = {
+        article: {
+          title: existingArticle.article.title,
+          description: faker.lorem.sentences(),
+          body: faker.lorem.paragraphs(),
+          tagList: faker.lorem.words().split(' '),
+        },
+      };
+
+      const createArticleResponse = await request(app)
+        .post(createArticleUrl)
+        .set('authorization', `Token ${author.user.token}`)
+        .send(createArticleRequestBody);
+
+      expect(createArticleResponse.status).toBe(422);
+      expect(createArticleResponse.body).toStrictEqual({
+        errors: {
+          body: ['"slug" is taken'],
         },
       });
     });
