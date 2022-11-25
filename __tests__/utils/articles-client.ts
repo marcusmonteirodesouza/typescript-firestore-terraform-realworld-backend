@@ -38,6 +38,23 @@ class ArticlesClient {
 
     return response.body;
   }
+
+  async addRandomComment(token: string, articleSlug: string) {
+    const requestBody = {
+      comment: {
+        body: faker.lorem.paragraphs(),
+      },
+    };
+
+    const response = await request(app)
+      .post(`/articles/${articleSlug}/comments`)
+      .set('authorization', `Token ${token}`)
+      .send(requestBody);
+
+    assert.strictEqual(response.statusCode, 201);
+
+    return response.body;
+  }
 }
 
 const articlesClient = new ArticlesClient();

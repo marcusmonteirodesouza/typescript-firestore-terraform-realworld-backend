@@ -8,7 +8,6 @@ class Article {
   private _tagList: string[];
   private _createdAt: Date;
   private _updatedAt: Date;
-  private _favoritesCount: number;
 
   constructor(
     id: string,
@@ -19,8 +18,7 @@ class Article {
     body: string,
     tagList: string[],
     createdAt: Date,
-    updatedAt: Date,
-    favoritesCount: number
+    updatedAt: Date
   ) {
     this._id = id;
     this._authorId = authorId;
@@ -31,7 +29,6 @@ class Article {
     this._tagList = tagList;
     this._createdAt = createdAt;
     this._updatedAt = updatedAt;
-    this._favoritesCount = favoritesCount;
   }
 
   get id() {
@@ -68,10 +65,6 @@ class Article {
 
   get updatedAt() {
     return this._updatedAt;
-  }
-
-  get favoritesCount() {
-    return this._favoritesCount;
   }
 }
 

@@ -53,6 +53,7 @@ class ProfilesService {
 
     const snapshot = await this.firestore
       .collection(this.followsCollection)
+      .select()
       .where('followerId', '==', followerId)
       .where('followeeId', '==', followeeId)
       .get();
@@ -81,6 +82,7 @@ class ProfilesService {
 
     const snapshot = await this.firestore
       .collection(this.followsCollection)
+      .select()
       .where('followerId', '==', follower.id)
       .where('followeeId', '==', followee.id)
       .get();

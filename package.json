@@ -28,7 +28,7 @@
     "compile": "tsc",
     "fix": "gts fix",
     "prepare": "npm run compile",
-    "pretest": "npm run up:firestore",
+    "pretest": "npm run down && npm run up:firestore",
     "posttest": "npm run down && npm run compile && npm run lint"
   },
   "devDependencies": {
