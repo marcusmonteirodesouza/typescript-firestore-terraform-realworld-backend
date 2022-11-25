@@ -10,7 +10,12 @@ import {Comment} from './comment';
 class ArticleDto {
   public readonly article;
 
-  constructor(article: Article, favorited: boolean, author: Profile) {
+  constructor(
+    article: Article,
+    favoritesCount: number,
+    favorited: boolean,
+    author: Profile
+  ) {
     this.article = {
       slug: article.slug,
       title: article.title,
@@ -20,7 +25,7 @@ class ArticleDto {
       createdAt: article.createdAt.toISOString(),
       updatedAt: article.updatedAt.toISOString(),
       favorited: favorited,
-      favoritesCount: article.favoritesCount,
+      favoritesCount: favoritesCount,
       author: {
         username: author.username,
         bio: author.bio,
@@ -47,6 +52,14 @@ class CommentDto {
         following: author.following,
       },
     };
+  }
+}
+
+class MultipleCommentsDto {
+  public readonly comments;
+
+  constructor(commentDtos: CommentDto[]) {
+    this.comments = commentDtos.map(comment => comment.comment);
   }
 }
 
@@ -92,7 +105,7 @@ class ArticlesRouter {
             author.id
           );
 
-          const articleDto = new ArticleDto(article, false, authorProfile);
+          const articleDto = new ArticleDto(article, 0, false, authorProfile);
 
           return res.status(201).json(articleDto);
         } catch (err) {
@@ -114,11 +127,20 @@ class ArticlesRouter {
 
           const article = (await this.articlesService.getArticleBySlug(slug))!;
 
+          const favoritesCount = await this.articlesService.getFavoritesCount(
+            article.id
+          );
+
           const authorProfile = await this.profilesService.getProfile(
             article.authorId
           );
 
-          const articleDto = new ArticleDto(article, true, authorProfile);
+          const articleDto = new ArticleDto(
+            article,
+            favoritesCount,
+            true,
+            authorProfile
+          );
 
           return res.json(articleDto);
         } catch (err) {
@@ -181,6 +203,10 @@ class ArticlesRouter {
             throw new NotFoundError(`slug "${slug}" not found`);
           }
 
+          const favoritesCount = await this.articlesService.getFavoritesCount(
+            article.id
+          );
+
           let authorProfile: Profile;
           let favorited = false;
 
@@ -199,7 +225,12 @@ class ArticlesRouter {
             );
           }
 
-          const articleDto = new ArticleDto(article, favorited, authorProfile);
+          const articleDto = new ArticleDto(
+            article,
+            favoritesCount,
+            favorited,
+            authorProfile
+          );
 
           return res.json(articleDto);
         } catch (err) {
@@ -217,6 +248,44 @@ class ArticlesRouter {
         return next(err);
       }
     });
+
+    router.get(
+      '/articles/:slug/comments',
+      this.auth.optionalAuth,
+      async (req, res, next) => {
+        try {
+          const {slug} = req.params;
+
+          const comments = await this.articlesService.listComments({
+            orderBy: [
+              {
+                field: 'createdAt',
+                direction: 'desc',
+              },
+            ],
+            slug,
+          });
+
+          // TODO(Marcus): Optimize this. Maybe get a list of profiles and then merge.
+          const commentsDtos = await Promise.all(
+            comments.map(async comment => {
+              const followerId = req.user?.id;
+
+              const authorProfile = await this.profilesService.getProfile(
+                comment.authorId,
+                followerId
+              );
+
+              return new CommentDto(comment, authorProfile);
+            })
+          );
+
+          return res.json(new MultipleCommentsDto(commentsDtos));
+        } catch (err) {
+          return next(err);
+        }
+      }
+    );
 
     router.put(
       '/articles/:slug',
@@ -260,12 +329,17 @@ class ArticlesRouter {
             updateArticleParams
           );
 
+          const favoritesCount = await this.articlesService.getFavoritesCount(
+            updatedArticle.id
+          );
+
           const authorProfile = await this.profilesService.getProfile(
             author.id
           );
 
           const articleDto = new ArticleDto(
             updatedArticle,
+            favoritesCount,
             false,
             authorProfile
           );
@@ -320,11 +394,20 @@ class ArticlesRouter {
 
           const article = (await this.articlesService.getArticleBySlug(slug))!;
 
+          const favoritesCount = await this.articlesService.getFavoritesCount(
+            article.id
+          );
+
           const authorProfile = await this.profilesService.getProfile(
             article.authorId
           );
 
-          const articleDto = new ArticleDto(article, false, authorProfile);
+          const articleDto = new ArticleDto(
+            article,
+            favoritesCount,
+            false,
+            authorProfile
+          );
 
           return res.json(articleDto);
         } catch (err) {

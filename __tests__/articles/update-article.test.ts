@@ -110,7 +110,7 @@ describe('PUT /articles/:slug', () => {
           updatedAt: expect.toBeDateString(),
         },
       });
-      expect(updateArticleResponse.body.article.updatedAt).toBeAfter(
+      expect(updateArticleResponse.body.article.updatedAt).toStrictEqual(
         article.article.updatedAt
       );
     });

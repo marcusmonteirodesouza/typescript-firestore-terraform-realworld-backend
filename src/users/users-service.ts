@@ -1,4 +1,4 @@
-import {FieldValue, Firestore} from '@google-cloud/firestore';
+import {Firestore, FirestoreDataConverter} from '@google-cloud/firestore';
 import * as bcrypt from 'bcryptjs';
 import {Joi} from 'celebrate';
 import {AlreadyExistsError, NotFoundError} from '../errors';
@@ -11,6 +11,25 @@ interface UpdateUserParams {
   bio?: string;
   image?: string;
 }
+
+const userConverter: FirestoreDataConverter<User> = {
+  // eslint-disable-next-line  @typescript-eslint/no-unused-vars
+  toFirestore: function (_user) {
+    throw new Error('Function not implemented.');
+  },
+
+  fromFirestore: function (snapshot) {
+    const data = snapshot.data();
+
+    return new User(
+      snapshot.id,
+      data.email,
+      data.username,
+      data.bio,
+      data.image
+    );
+  },
+};
 
 class UsersService {
   private usersCollection = 'users';
@@ -34,21 +53,13 @@ class UsersService {
       email,
       username,
       passwordHash,
-      createdAt: FieldValue.serverTimestamp(),
-      updatedAt: FieldValue.serverTimestamp(),
     };
 
     const document = await this.firestore
       .collection(this.usersCollection)
       .add(userData);
 
-    const user = new User(
-      document.id,
-      userData.email,
-      userData.username,
-      undefined,
-      undefined
-    );
+    const user = new User(document.id, userData.email, userData.username);
 
     return user;
   }
@@ -56,53 +67,42 @@ class UsersService {
   async getUserById(userId: string): Promise<User | undefined> {
     const userSnapshot = await this.firestore
       .doc(`${this.usersCollection}/${userId}`)
+      .withConverter(userConverter)
       .get();
 
-    const userData = userSnapshot.data();
-
-    if (!userData) {
+    if (!userSnapshot.exists) {
       return undefined;
     }
 
-    const user = new User(
-      userSnapshot.id,
-      userData.email,
-      userData.username,
-      userData.bio,
-      userData.image
-    );
-
-    return user;
+    return userSnapshot.data();
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
     const userSnapshot = await this.firestore
       .collection(this.usersCollection)
       .where('email', '==', email)
+      .withConverter(userConverter)
       .get();
 
     if (userSnapshot.empty) {
       return undefined;
     }
 
-    const userDoc = userSnapshot.docs[0];
-
-    return await this.getUserById(userDoc.id);
+    return userSnapshot.docs[0].data();
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
     const userSnapshot = await this.firestore
       .collection(this.usersCollection)
       .where('username', '==', username)
+      .withConverter(userConverter)
       .get();
 
     if (userSnapshot.empty) {
       return undefined;
     }
 
-    const userDoc = userSnapshot.docs[0];
-
-    return await this.getUserById(userDoc.id);
+    return userSnapshot.docs[0].data();
   }
 
   async updateUser(userId: string, params: UpdateUserParams): Promise<User> {
@@ -144,10 +144,7 @@ class UsersService {
         userData.image = params.image;
       }
 
-      t.update(userDocRef, {
-        ...userData,
-        updatedAt: FieldValue.serverTimestamp(),
-      });
+      t.update(userDocRef, userData);
     });
 
     return (await this.getUserById(userId))!;
@@ -156,6 +153,7 @@ class UsersService {
   async verifyPassword(email: string, password: string): Promise<boolean> {
     const snapshot = await this.firestore
       .collection(this.usersCollection)
+      .select('passwordHash')
       .where('email', '==', email)
       .get();
 
