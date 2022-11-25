@@ -90,114 +90,117 @@ describe('GET /articles/:slug/comments', () => {
         });
       });
     });
+  });
 
-    test('given article does not exist should return http status code 404 and an errors object', async () => {
-      const user = await usersClient.registerRandomUser();
+  test('given article does not exist should return http status code 404 and an errors object', async () => {
+    const user = await usersClient.registerRandomUser();
 
-      const slug = slugify(faker.lorem.sentence());
+    const slug = slugify(faker.lorem.sentence());
+
+    const response = await request(app)
+      .get(makeGetCommentsUrl(slug))
+      .set('authorization', `Token ${user.user.token}`)
+      .send();
+
+    expect(response.status).toBe(404);
+    expect(response.body).toStrictEqual({
+      errors: {
+        body: [`slug "${slug}" not found`],
+      },
+    });
+  });
+
+  describe('authentication errors', () => {
+    test('given user is not found should return http status code 401 and an errors object', async () => {
+      const token = jwt.getRandomToken();
+
+      const author = await usersClient.registerRandomUser();
+
+      const article = await articlesClient.createRandomArticle(
+        author.user.token
+      );
+
+      const requestBody = {
+        comment: {
+          body: faker.lorem.paragraphs(),
+        },
+      };
 
       const response = await request(app)
-        .get(makeGetCommentsUrl(slug))
-        .set('authorization', `Token ${user.user.token}`)
-        .send();
+        .get(makeGetCommentsUrl(article.article.slug))
+        .set('authorization', `Token ${token}`)
+        .send(requestBody);
 
-      expect(response.status).toBe(404);
+      expect(response.status).toBe(401);
       expect(response.body).toStrictEqual({
         errors: {
-          body: [`slug "${slug}" not found`],
+          body: ['unauthorized'],
         },
       });
     });
 
-    describe('authentication errors', () => {
-      test('given user is not found should return http status code 401 and an errors object', async () => {
-        const token = jwt.getRandomToken();
+    test('given token has wrong issuer should return http status code 401 and an errors object', async () => {
+      const issuer = faker.internet.url();
 
-        const author = await usersClient.registerRandomUser();
+      const token = jwt.getRandomToken({issuer});
 
-        const article = await articlesClient.createRandomArticle(
-          author.user.token
-        );
+      const author = await usersClient.registerRandomUser();
 
-        const requestBody = {
-          comment: {
-            body: faker.lorem.paragraphs(),
-          },
-        };
+      const article = await articlesClient.createRandomArticle(
+        author.user.token
+      );
 
-        const response = await request(app)
-          .get(makeGetCommentsUrl(article.article.slug))
-          .set('authorization', `Token ${token}`)
-          .send(requestBody);
+      const requestBody = {
+        comment: {
+          body: faker.lorem.paragraphs(),
+        },
+      };
 
-        expect(response.status).toBe(401);
-        expect(response.body).toStrictEqual({
-          errors: {
-            body: ['unauthorized'],
-          },
-        });
+      const response = await request(app)
+        .get(makeGetCommentsUrl(article.article.slug))
+        .set('authorization', `Token ${token}`)
+        .send(requestBody);
+
+      expect(response.status).toBe(401);
+      expect(response.body).toStrictEqual({
+        errors: {
+          body: ['unauthorized'],
+        },
+      });
+    });
+
+    test('given token is expired should return http status code 401 and an errors object', async () => {
+      const author = await usersClient.registerRandomUser();
+
+      const article = await articlesClient.createRandomArticle(
+        author.user.token
+      );
+
+      const expiresInSeconds = 1;
+
+      const token = jwt.getRandomToken({
+        subject: author.user.id,
+        expiresInSeconds,
       });
 
-      test('given token has wrong issuer should return http status code 401 and an errors object', async () => {
-        const issuer = faker.internet.url();
+      await new Promise(r => setTimeout(r, expiresInSeconds * 1000 + 1));
 
-        const token = jwt.getRandomToken({issuer});
+      const requestBody = {
+        comment: {
+          body: faker.lorem.paragraphs(),
+        },
+      };
 
-        const author = await usersClient.registerRandomUser();
+      const response = await request(app)
+        .get(makeGetCommentsUrl(article.article.slug))
+        .set('authorization', `Token ${token}`)
+        .send(requestBody);
 
-        const article = await articlesClient.createRandomArticle(
-          author.user.token
-        );
-
-        const requestBody = {
-          comment: {
-            body: faker.lorem.paragraphs(),
-          },
-        };
-
-        const response = await request(app)
-          .get(makeGetCommentsUrl(article.article.slug))
-          .set('authorization', `Token ${token}`)
-          .send(requestBody);
-
-        expect(response.status).toBe(401);
-        expect(response.body).toStrictEqual({
-          errors: {
-            body: ['unauthorized'],
-          },
-        });
-      });
-
-      test('given token is expired should return http status code 401 and an errors object', async () => {
-        const expiresInSeconds = 1;
-
-        const token = jwt.getRandomToken({expiresInSeconds});
-
-        await new Promise(r => setTimeout(r, expiresInSeconds * 1000 + 1));
-
-        const author = await usersClient.registerRandomUser();
-
-        const article = await articlesClient.createRandomArticle(
-          author.user.token
-        );
-
-        const requestBody = {
-          comment: {
-            body: faker.lorem.paragraphs(),
-          },
-        };
-
-        const response = await request(app)
-          .get(makeGetCommentsUrl(article.article.slug))
-          .set('authorization', `Token ${token}`)
-          .send(requestBody);
-
-        expect(response.status).toBe(401);
-        expect(response.body).toStrictEqual({
-          errors: {
-            body: ['unauthorized'],
-          },
-        });
+      expect(response.status).toBe(401);
+      expect(response.body).toStrictEqual({
+        errors: {
+          body: ['unauthorized'],
+        },
       });
     });
   });

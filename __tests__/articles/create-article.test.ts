@@ -277,9 +277,14 @@ describe('POST /articles', () => {
     });
 
     test('given token is expired should return http status code 401 and an errors object', async () => {
+      const user = await usersClient.registerRandomUser();
+
       const expiresInSeconds = 1;
 
-      const token = jwt.getRandomToken({expiresInSeconds});
+      const token = jwt.getRandomToken({
+        subject: user.user.id,
+        expiresInSeconds,
+      });
 
       await new Promise(r => setTimeout(r, expiresInSeconds * 1000 + 1));
 

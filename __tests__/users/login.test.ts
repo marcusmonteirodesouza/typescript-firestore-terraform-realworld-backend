@@ -9,12 +9,12 @@ describe('POST /users/login', () => {
 
   describe('given a valid request', () => {
     test('should return http status code 200 and the user', async () => {
-      const userAndPassword = await usersClient.registerRandomUser();
+      const user = await usersClient.registerRandomUser();
 
       const requestBody = {
         user: {
-          email: userAndPassword.user.email,
-          password: userAndPassword.password,
+          email: user.user.email,
+          password: user.password,
         },
       };
 
@@ -23,11 +23,11 @@ describe('POST /users/login', () => {
       expect(response.status).toBe(200);
       expect(response.body).toStrictEqual({
         user: {
-          email: userAndPassword.user.email,
-          username: userAndPassword.user.username,
+          email: user.user.email,
+          username: user.user.username,
           token: expect.not.toBeEmpty(),
-          bio: userAndPassword.user.bio,
-          image: userAndPassword.user.image,
+          bio: user.user.bio,
+          image: user.user.image,
         },
       });
     });
