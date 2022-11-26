@@ -4,6 +4,7 @@ import {
   FirestoreDataConverter,
 } from '@google-cloud/firestore';
 import slugify from 'slugify';
+import {Joi} from 'celebrate';
 import {AlreadyExistsError, NotFoundError} from '../errors';
 import {UsersService} from '../users';
 import {Article} from './article';
@@ -13,14 +14,27 @@ interface CreateArticleParams {
   title: string;
   description: string;
   body: string;
-  tagList?: string[];
+  tags?: string[];
+}
+
+interface ListArticlesParams {
+  orderBy: {
+    field: 'createdAt';
+    direction: 'asc' | 'desc';
+  }[];
+  tag?: string;
+  authorId?: string;
+  favoritedByUserId?: string;
+  limit?: number;
+  offset?: number;
 }
 
 interface UpdateArticleParams {
   title?: string;
   description?: string;
   body?: string;
-  tagList?: string[];
+  tags?: string[];
+  favoritedBy?: string[];
 }
 
 interface ListCommentsParams {
@@ -47,7 +61,8 @@ const articleConverter: FirestoreDataConverter<Article> = {
       data.title,
       data.description,
       data.body,
-      data.tagList,
+      data.tags,
+      data.favoritedBy,
       snapshot.createTime!.toDate(),
       snapshot.updateTime!.toDate()
     );
@@ -78,13 +93,12 @@ const commentConverter: FirestoreDataConverter<Comment> = {
 };
 
 class ArticlesService {
-  private articlesCollection = 'articles';
-  private favoritesCollection = 'favorites';
-  private commentsCollection = 'comments';
+  private readonly articlesCollection = 'articles';
+  private readonly commentsCollection = 'comments';
 
   constructor(
-    private firestore: Firestore,
-    private usersService: UsersService
+    private readonly firestore: Firestore,
+    private readonly usersService: UsersService
   ) {}
 
   async createArticle(
@@ -105,10 +119,10 @@ class ArticlesService {
       this.articlesCollection
     );
 
-    let tagList: string[] = [];
+    let tags: string[] = [];
 
-    if (params.tagList) {
-      tagList = this.prepareTagList(params.tagList);
+    if (params.tags) {
+      tags = this.prepareTags(params.tags);
     }
 
     const articleData = {
@@ -117,7 +131,9 @@ class ArticlesService {
       title: params.title.trim(),
       description: params.description,
       body: params.body,
-      tagList,
+      tags,
+      favoritedBy: [],
+      createdAt: FieldValue.serverTimestamp(), // used for orderBy
     };
 
     const articleDocRef = await articlesCollection.add(articleData);
@@ -150,6 +166,70 @@ class ArticlesService {
     }
 
     return articleSnapshot.docs[0].data();
+  }
+
+  async listArticles(params: ListArticlesParams) {
+    if (params.orderBy.length === 0) {
+      throw new RangeError('"params.orderBy" must have at least 1 element');
+    }
+
+    let query = this.firestore
+      .collection(this.articlesCollection)
+      .withConverter(articleConverter)
+      .orderBy(params.orderBy[0].field, params.orderBy[0].direction);
+
+    for (let i = 1; i < params.orderBy.length; i++) {
+      query = query.orderBy(
+        params.orderBy[i].field,
+        params.orderBy[i].direction
+      );
+    }
+
+    if (params.tag) {
+      query = query.where('tags', 'array-contains', params.tag);
+    }
+
+    if (params.authorId) {
+      const author = await this.usersService.getUserById(params.authorId);
+
+      if (!author) {
+        throw new NotFoundError(`author "${params.authorId}" not found`);
+      }
+
+      query = query.where('authorId', '==', author.id);
+    }
+
+    if (params.favoritedByUserId) {
+      const user = await this.usersService.getUserById(
+        params.favoritedByUserId
+      );
+
+      if (!user) {
+        throw new NotFoundError(`user "${params.favoritedByUserId}" not found`);
+      }
+
+      query = query.where('favoritedBy', 'array-contains', user.id);
+    }
+
+    if (params.limit) {
+      const validatedLimit = await Joi.number()
+        .integer()
+        .validateAsync(params.limit);
+
+      query = query.limit(validatedLimit);
+    }
+
+    if (params.offset) {
+      const validatedOffset = await Joi.number()
+        .integer()
+        .validateAsync(params.offset);
+
+      query = query.offset(validatedOffset);
+    }
+
+    const snapshot = await query.get();
+
+    return snapshot.docs.map(doc => doc.data());
   }
 
   async updateArticle(
@@ -191,8 +271,12 @@ class ArticlesService {
         articleData.body = params.body;
       }
 
-      if (params.tagList) {
-        articleData.tagList = this.prepareTagList(params.tagList);
+      if (params.tags) {
+        articleData.tags = this.prepareTags(params.tags);
+      }
+
+      if (params.favoritedBy) {
+        articleData.favoritedBy = this.prepareFavoritedBy(params.favoritedBy);
       }
 
       t.update(articleDocRef, articleData);
@@ -216,11 +300,11 @@ class ArticlesService {
   async listTags(): Promise<string[]> {
     const listTagsSnapshot = await this.firestore
       .collection(this.articlesCollection)
-      .select('tagList')
+      .select('tags')
       .get();
 
     const tags = [
-      ...new Set(listTagsSnapshot.docs.map(doc => doc.get('tagList')).flat()),
+      ...new Set(listTagsSnapshot.docs.map(doc => doc.get('tags')).flat()),
     ] as string[];
     tags.sort();
     return tags;
@@ -233,24 +317,19 @@ class ArticlesService {
       throw new NotFoundError(`slug "${slug}" not found`);
     }
 
-    if (await this.isFavorited(article.id, userId)) {
+    const user = await this.usersService.getUserById(userId);
+
+    if (!user) {
+      throw new NotFoundError(`user "${userId}" not found`);
+    }
+
+    if (article.favoritedBy.includes(user.id)) {
       return;
     }
 
-    await this.firestore.collection(this.favoritesCollection).add({
-      articleId: article.id,
-      userId,
+    await this.updateArticle(article.id, {
+      favoritedBy: [...article.favoritedBy, user.id],
     });
-  }
-
-  async getFavoritesCount(articleId: string): Promise<number> {
-    const snapshot = await this.firestore
-      .collection(this.favoritesCollection)
-      .select()
-      .where('articleId', '==', articleId)
-      .get();
-
-    return snapshot.docs.length;
   }
 
   async unfavoriteArticleBySlug(slug: string, userId: string): Promise<void> {
@@ -260,47 +339,19 @@ class ArticlesService {
       throw new NotFoundError(`slug "${slug}" not found`);
     }
 
-    if (!(await this.isFavorited(article.id, userId))) {
-      return;
-    }
-
-    const snapshot = await this.firestore
-      .collection(this.favoritesCollection)
-      .select()
-      .where('articleId', '==', article.id)
-      .where('userId', '==', userId)
-      .get();
-
-    for (const doc of snapshot.docs) {
-      await doc.ref.delete();
-    }
-  }
-
-  async isFavorited(articleId: string, userId: string): Promise<boolean> {
-    const article = await this.getArticleById(articleId);
-
-    if (!article) {
-      throw new NotFoundError(`article ${articleId} not found`);
-    }
-
     const user = await this.usersService.getUserById(userId);
 
     if (!user) {
       throw new NotFoundError(`user "${userId}" not found`);
     }
 
-    const snapshot = await this.firestore
-      .collection(this.favoritesCollection)
-      .select()
-      .where('articleId', '==', article.id)
-      .where('userId', '==', user.id)
-      .get();
-
-    if (snapshot.empty) {
-      return false;
+    if (!article.favoritedBy.includes(user.id)) {
+      return;
     }
 
-    return true;
+    await this.updateArticle(article.id, {
+      favoritedBy: article.favoritedBy.filter(uId => uId !== user.id),
+    });
   }
 
   async addComment(
@@ -405,10 +456,16 @@ class ArticlesService {
     return slugify(title.toLowerCase());
   }
 
-  private prepareTagList(tagList: string[]) {
-    tagList = [...new Set(tagList.map(tag => slugify(tag.toLowerCase())))];
-    tagList.sort();
-    return tagList;
+  private prepareTags(tags: string[]) {
+    tags = [...new Set(tags.map(tag => slugify(tag.toLowerCase())))];
+    tags.sort();
+    return tags;
+  }
+
+  private prepareFavoritedBy(favoritedBy: string[]) {
+    favoritedBy = Array.from(new Set(favoritedBy));
+    favoritedBy.sort();
+    return favoritedBy;
   }
 }
 

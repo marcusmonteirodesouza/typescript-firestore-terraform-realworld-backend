@@ -1,10 +1,14 @@
 import 'jest-extended';
 import * as request from 'supertest';
 import {app} from '../../src/app';
-import {articlesClient, usersClient} from '../utils';
+import {articlesClient, clearFirestore, usersClient} from '../utils';
 
 describe('GET /tags', () => {
   const getTagsUrl = '/tags';
+
+  beforeEach(async () => {
+    await clearFirestore();
+  });
 
   describe('given a valid request', () => {
     test('should return http status code 200 and the list of tags', async () => {
@@ -24,10 +28,7 @@ describe('GET /tags', () => {
 
       expect(response.status).toBe(200);
       expect(response.body).toStrictEqual({
-        tags: expect.arrayContaining([
-          ...article1.article.tagList,
-          ...article2.article.tagList,
-        ]),
+        tags: [...article1.article.tagList, ...article2.article.tagList].sort(),
       });
     });
   });

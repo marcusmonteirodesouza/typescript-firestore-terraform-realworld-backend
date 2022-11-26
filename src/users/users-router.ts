@@ -7,7 +7,7 @@ import {NotFoundError, UnauthorizedError} from '../errors';
 import {Auth} from '../middleware';
 
 class UserDto {
-  public readonly user;
+  readonly user;
 
   constructor(
     email: string,
@@ -28,9 +28,9 @@ class UserDto {
 
 class UsersRouter {
   constructor(
-    private auth: Auth,
-    private usersService: UsersService,
-    private jwtService: JWTService
+    private readonly auth: Auth,
+    private readonly usersService: UsersService,
+    private readonly jwtService: JWTService
   ) {}
 
   get router() {

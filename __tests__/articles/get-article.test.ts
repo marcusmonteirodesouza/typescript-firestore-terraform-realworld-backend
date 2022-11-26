@@ -67,6 +67,7 @@ describe('GET /articles/:slug', () => {
               article: {
                 ...article.article,
                 favoritesCount: 1,
+                updatedAt: expect.toBeAfter(article.article.updatedAt),
                 author: {
                   ...article.article.author,
                   following: true,
@@ -139,6 +140,7 @@ describe('GET /articles/:slug', () => {
               article: {
                 ...article.article,
                 favoritesCount: 1,
+                updatedAt: expect.toBeAfter(article.article.updatedAt),
                 author: {
                   ...article.article.author,
                   following: false,

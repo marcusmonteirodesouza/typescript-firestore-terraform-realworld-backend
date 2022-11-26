@@ -3,12 +3,16 @@ import * as request from 'supertest';
 import slugify from 'slugify';
 import {faker} from '@faker-js/faker';
 import {app} from '../../src/app';
-import {articlesClient, jwt, usersClient} from '../utils';
+import {articlesClient, clearFirestore, jwt, usersClient} from '../utils';
 
 describe('PUT /articles/:slug', () => {
   function makeUpdateArticleUrl(slug: string) {
     return `/articles/${slug}`;
   }
+
+  beforeEach(async () => {
+    await clearFirestore();
+  });
 
   describe('given a valid request', () => {
     test('given all fields are set should return http status code 200 and the article', async () => {
@@ -18,11 +22,9 @@ describe('PUT /articles/:slug', () => {
         author.user.token
       );
 
-      const randomSuffix = faker.random.alphaNumeric(8);
-
       const updateArticleRequestBody = {
         article: {
-          title: ` A New Hope ${randomSuffix} `,
+          title: ' A New Hope',
           description: faker.lorem.sentences(),
           body: faker.lorem.paragraphs(),
           tagList: [' bTag ', ' bTag1 ', ' a tag ', ' bTag '],
@@ -38,7 +40,7 @@ describe('PUT /articles/:slug', () => {
       expect(updateArticleResponse.body).toStrictEqual({
         article: {
           ...article.article,
-          slug: `a-new-hope-${randomSuffix}`,
+          slug: 'a-new-hope',
           title: updateArticleRequestBody.article.title,
           description: updateArticleRequestBody.article.description,
           body: updateArticleRequestBody.article.body,
@@ -58,11 +60,9 @@ describe('PUT /articles/:slug', () => {
         author.user.token
       );
 
-      const randomSuffix = faker.random.alphaNumeric(8);
-
       const updateArticleRequestBody = {
         article: {
-          title: ` A New Hope ${randomSuffix} `,
+          title: ' A New Hope',
         },
       };
 
@@ -75,7 +75,7 @@ describe('PUT /articles/:slug', () => {
       expect(updateArticleResponse.body).toStrictEqual({
         article: {
           ...article.article,
-          slug: `a-new-hope-${randomSuffix}`,
+          slug: 'a-new-hope',
           title: updateArticleRequestBody.article.title,
           updatedAt: expect.toBeDateString(),
         },

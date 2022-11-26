@@ -43,6 +43,7 @@ describe('DELETE /articles/:slug/favorite', () => {
           ...article.article,
           favoritesCount: 1,
           favorited: false,
+          updatedAt: expect.toBeAfter(article.article.updatedAt),
         },
       });
 
@@ -57,6 +58,7 @@ describe('DELETE /articles/:slug/favorite', () => {
           ...unfavoriteArticleResponse1.body.article,
           favoritesCount: 0,
           favorited: false,
+          updatedAt: expect.toBeAfter(article.article.updatedAt),
         },
       });
     });

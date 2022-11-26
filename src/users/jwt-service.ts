@@ -9,9 +9,9 @@ interface JWTOptions {
 
 class JWTService {
   constructor(
-    private usersService: UsersService,
-    private jwtSecretKey: string,
-    private jwtOptions: JWTOptions
+    private readonly usersService: UsersService,
+    private readonly jwtSecretKey: string,
+    private readonly jwtOptions: JWTOptions
   ) {}
 
   getToken(user: User) {

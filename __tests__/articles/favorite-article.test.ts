@@ -33,6 +33,7 @@ describe('POST /articles/:slug/favorite', () => {
           ...article.article,
           favoritesCount: 1,
           favorited: true,
+          updatedAt: expect.toBeAfter(article.article.updatedAt),
         },
       });
 
@@ -46,6 +47,7 @@ describe('POST /articles/:slug/favorite', () => {
         article: {
           ...favoriteArticleResponse1.body.article,
           favoritesCount: 2,
+          updatedAt: expect.toBeAfter(article.article.updatedAt),
         },
       });
     });

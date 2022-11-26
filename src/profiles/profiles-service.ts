@@ -4,11 +4,11 @@ import {UsersService} from '../users';
 import {Profile} from './profile';
 
 class ProfilesService {
-  private followsCollection = 'follows';
+  private readonly followsCollection = 'follows';
 
   constructor(
-    private firestore: Firestore,
-    private usersService: UsersService
+    private readonly firestore: Firestore,
+    private readonly usersService: UsersService
   ) {}
 
   async getProfile(userId: string, followerId?: string): Promise<Profile> {

@@ -5,7 +5,7 @@ import {UsersService} from '../users';
 import {ProfilesService} from './profiles-service';
 
 class ProfileDto {
-  public readonly profile;
+  readonly profile;
 
   constructor(
     username: string,
@@ -24,9 +24,9 @@ class ProfileDto {
 
 class ProfilesRouter {
   constructor(
-    private auth: Auth,
-    private usersService: UsersService,
-    private profilesService: ProfilesService
+    private readonly auth: Auth,
+    private readonly usersService: UsersService,
+    private readonly profilesService: ProfilesService
   ) {}
 
   get router() {

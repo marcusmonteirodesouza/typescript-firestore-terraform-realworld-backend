@@ -32,9 +32,9 @@ const userConverter: FirestoreDataConverter<User> = {
 };
 
 class UsersService {
-  private usersCollection = 'users';
+  private readonly usersCollection = 'users';
 
-  constructor(private firestore: Firestore) {}
+  constructor(private readonly firestore: Firestore) {}
 
   async registerUser(
     email: string,
@@ -168,13 +168,9 @@ class UsersService {
   }
 
   private async validateEmailOrThrow(email: string) {
-    const {error} = Joi.string().email().validate(email);
+    const validatedEmail = await Joi.string().email().validateAsync(email);
 
-    if (error) {
-      throw new RangeError(error.message);
-    }
-
-    if (await this.getUserByEmail(email)) {
+    if (await this.getUserByEmail(validatedEmail)) {
       throw new AlreadyExistsError('"email" is taken');
     }
   }
@@ -185,18 +181,14 @@ class UsersService {
     }
   }
 
-  private async validatePasswordOrThrow(password: string) {
+  private validatePasswordOrThrow(password: string) {
     if (password.length < 8) {
       throw new RangeError('"password" must contain at least 8 characters');
     }
   }
 
   private async validateImageOrThrow(image: string) {
-    const {error} = Joi.string().uri().validate(image);
-
-    if (error) {
-      throw new RangeError(error.message);
-    }
+    await Joi.string().uri().validateAsync(image);
   }
 
   private async hashPassword(password: string) {

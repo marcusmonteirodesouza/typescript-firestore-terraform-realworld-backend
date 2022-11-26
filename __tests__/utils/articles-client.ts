@@ -3,15 +3,20 @@ import * as assert from 'node:assert';
 import {faker} from '@faker-js/faker';
 import {app} from '../../src/app';
 
+interface UpdateArticleParams {
+  title?: string;
+  description?: string;
+  body?: string;
+  tagList: string[];
+}
+
 class ArticlesClient {
   constructor() {}
 
   async createRandomArticle(token: string) {
-    const randomSuffix = faker.random.alphaNumeric(8);
-
     const requestBody = {
       article: {
-        title: `${faker.lorem.sentence()}-${randomSuffix}`,
+        title: faker.lorem.sentence(),
         description: faker.lorem.sentences(),
         body: faker.lorem.paragraphs(),
         tagList: faker.lorem.words().split(' '),
@@ -24,6 +29,30 @@ class ArticlesClient {
       .send(requestBody);
 
     assert.strictEqual(response.statusCode, 201);
+
+    return response.body;
+  }
+
+  async updateArticle(
+    token: string,
+    slug: string,
+    params: UpdateArticleParams
+  ) {
+    const requestBody = {
+      article: {
+        title: params.title,
+        description: params.description,
+        body: params.body,
+        tagList: params.tagList,
+      },
+    };
+
+    const response = await request(app)
+      .put(`/articles/${slug}`)
+      .set('authorization', `Token ${token}`)
+      .send(requestBody);
+
+    assert.strictEqual(response.statusCode, 200);
 
     return response.body;
   }

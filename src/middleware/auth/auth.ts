@@ -3,7 +3,7 @@ import {JWTService} from '../../users';
 import {UnauthorizedError} from '../../errors';
 
 class Auth {
-  constructor(private jwtService: JWTService) {}
+  constructor(private readonly jwtService: JWTService) {}
 
   requireAuth = async (req: Request, res: Response, next: NextFunction) => {
     try {
