@@ -2,20 +2,23 @@ import 'jest-extended';
 import * as request from 'supertest';
 import {faker} from '@faker-js/faker';
 import {app} from '../../src/app';
-import {articlesClient, jwt, usersClient} from '../utils';
+import {articlesClient, clearFirestore, jwt, usersClient} from '../utils';
 
 describe('POST /articles', () => {
   const createArticleUrl = '/articles';
+
+  beforeEach(async () => {
+    await clearFirestore();
+  });
 
   describe('given a valid request', () => {
     test('given all fields are set should return http status code 201 and the article', async () => {
       const author = await usersClient.registerRandomUser();
 
-      const randomSuffix = faker.random.alphaNumeric(8);
-
       const requestBody = {
         article: {
-          title: ` Tired of falling from the sky? This is how to train your dragon!${randomSuffix} `,
+          title:
+            ' Tired of falling from the sky? This is how to train your dragon!',
           description: faker.lorem.sentences(),
           body: faker.lorem.paragraphs(),
           tagList: [' tag1 ', 'Tag4', ' tag 2 ', 'Tag4', ' a Tag 3 '],
@@ -30,8 +33,9 @@ describe('POST /articles', () => {
       expect(response.status).toBe(201);
       expect(response.body).toStrictEqual({
         article: {
-          slug: `tired-of-falling-from-the-sky-this-is-how-to-train-your-dragon!${randomSuffix}`,
-          title: `Tired of falling from the sky? This is how to train your dragon!${randomSuffix}`,
+          slug: 'tired-of-falling-from-the-sky-this-is-how-to-train-your-dragon!',
+          title:
+            'Tired of falling from the sky? This is how to train your dragon!',
           description: requestBody.article.description,
           body: requestBody.article.body,
           tagList: ['a-tag-3', 'tag-2', 'tag1', 'tag4'],
@@ -52,11 +56,10 @@ describe('POST /articles', () => {
     test('given no tagList should return http status code 201 and the article', async () => {
       const author = await usersClient.registerRandomUser();
 
-      const randomSuffix = faker.random.alphaNumeric(8);
-
       const requestBody = {
         article: {
-          title: ` Tired of falling from the sky? This is how to train your dragon!${randomSuffix} `,
+          title:
+            ' Tired of falling from the sky? This is how to train your dragon! ',
           description: faker.lorem.sentences(),
           body: faker.lorem.paragraphs(),
         },
@@ -70,8 +73,9 @@ describe('POST /articles', () => {
       expect(response.status).toBe(201);
       expect(response.body).toStrictEqual({
         article: {
-          slug: `tired-of-falling-from-the-sky-this-is-how-to-train-your-dragon!${randomSuffix}`,
-          title: `Tired of falling from the sky? This is how to train your dragon!${randomSuffix}`,
+          slug: 'tired-of-falling-from-the-sky-this-is-how-to-train-your-dragon!',
+          title:
+            'Tired of falling from the sky? This is how to train your dragon!',
           description: requestBody.article.description,
           body: requestBody.article.body,
           tagList: [],
@@ -201,11 +205,10 @@ describe('POST /articles', () => {
 
   describe('authentication errors', () => {
     test('given no authentication should return http status code 401 and an errors object', async () => {
-      const randomSuffix = faker.random.alphaNumeric();
-
       const requestBody = {
         article: {
-          title: ` Tired of falling from the sky? This is how to train your dragon!${randomSuffix} `,
+          title:
+            ' Tired of falling from the sky? This is how to train your dragon!',
           description: faker.lorem.sentences(),
           body: faker.lorem.paragraphs(),
         },
@@ -225,11 +228,11 @@ describe('POST /articles', () => {
 
     test('given user is not found should return http status code 401 and an errors object', async () => {
       const token = jwt.getRandomToken();
-      const randomSuffix = faker.random.alphaNumeric();
 
       const requestBody = {
         article: {
-          title: ` Tired of falling from the sky? This is how to train your dragon!${randomSuffix} `,
+          title:
+            ' Tired of falling from the sky? This is how to train your dragon!',
           description: faker.lorem.sentences(),
           body: faker.lorem.paragraphs(),
         },
@@ -253,11 +256,10 @@ describe('POST /articles', () => {
 
       const token = jwt.getRandomToken({issuer});
 
-      const randomSuffix = faker.random.alphaNumeric();
-
       const requestBody = {
         article: {
-          title: ` Tired of falling from the sky? This is how to train your dragon!${randomSuffix} `,
+          title:
+            ' Tired of falling from the sky? This is how to train your dragon!',
           description: faker.lorem.sentences(),
           body: faker.lorem.paragraphs(),
         },
@@ -288,11 +290,10 @@ describe('POST /articles', () => {
 
       await new Promise(r => setTimeout(r, expiresInSeconds * 1000 + 1));
 
-      const randomSuffix = faker.random.alphaNumeric();
-
       const requestBody = {
         article: {
-          title: ` Tired of falling from the sky? This is how to train your dragon!${randomSuffix} `,
+          title:
+            ' Tired of falling from the sky? This is how to train your dragon!',
           description: faker.lorem.sentences(),
           body: faker.lorem.paragraphs(),
         },

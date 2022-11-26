@@ -16,7 +16,7 @@
     "realworld-backend"
   ],
   "scripts": {
-    "test": "jest",
+    "test": "jest --runInBand",
     "pretest": "npm run down && npm run up:firestore",
     "posttest": "npm run down && npm run compile && npm run lint",
     "start": "nodemon --watch 'src/**/*.ts' --exec \"ts-node\" -r dotenv-expand/config src/index.ts",
@@ -40,6 +40,7 @@
     "@types/jest": "^29.2.3",
     "@types/jsonwebtoken": "^8.5.9",
     "@types/supertest": "^2.0.12",
+    "axios": "^1.2.0",
     "gts": "^3.1.1",
     "jest": "^29.3.1",
     "jest-extended": "^3.1.0",

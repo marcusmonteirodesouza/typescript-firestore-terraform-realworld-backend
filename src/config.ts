@@ -19,6 +19,7 @@ if (error) {
 
 const config = {
   firestore: {
+    emulatorHost: envVars.FIRESTORE_EMULATOR_HOST,
     projectId: envVars.FIRESTORE_PROJECT_ID,
   },
   port: envVars.PORT,
