@@ -17,21 +17,21 @@
   ],
   "scripts": {
     "test": "jest",
+    "pretest": "npm run down && npm run up:firestore",
+    "posttest": "npm run down && npm run compile && npm run lint",
     "start": "nodemon --watch 'src/**/*.ts' --exec \"ts-node\" -r dotenv-expand/config src/index.ts",
+    "prestart": "npm run up:firestore",
     "restart": "npm run down && npm start",
+    "down": "docker compose down",
     "up": "docker compose up",
     "up:build": "docker compose up --build",
     "up:firestore": "docker compose up -d firestore_emulator --wait",
-    "down": "docker compose down",
     "format": "prettier --write .",
     "lint": "gts lint",
+    "fix": "gts fix",
     "clean": "gts clean",
     "compile": "tsc",
-    "fix": "gts fix",
-    "prepare": "npm run compile",
-    "pretest": "npm run down && npm run up:firestore",
-    "posttest": "npm run down && npm run compile && npm run lint",
-    "prestart": "npm run up:firestore"
+    "prepare": "npm run compile"
   },
   "devDependencies": {
     "@faker-js/faker": "^7.6.0",
