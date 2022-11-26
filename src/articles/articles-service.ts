@@ -389,6 +389,18 @@ class ArticlesService {
     return snapshot.docs.map(doc => doc.data());
   }
 
+  async deleteCommentById(commentId: string) {
+    const comment = await this.getCommentById(commentId);
+
+    if (!comment) {
+      throw new NotFoundError(`comment "${commentId}" not found`);
+    }
+
+    await this.firestore
+      .doc(`${this.commentsCollection}/${comment.id}`)
+      .delete();
+  }
+
   private prepareSlug(title: string): string {
     return slugify(title.toLowerCase());
   }

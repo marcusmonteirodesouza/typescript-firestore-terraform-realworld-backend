@@ -3,6 +3,7 @@ import {faker} from '@faker-js/faker';
 import {config} from '../../src/config';
 
 interface RandomTokenOptions {
+  subject?: string;
   issuer?: string;
   expiresInSeconds?: number;
 }
@@ -15,6 +16,10 @@ function getRandomToken(options?: RandomTokenOptions) {
   };
 
   if (options) {
+    if (options.subject) {
+      signOptions.subject = options.subject;
+    }
+
     if (options.issuer) {
       signOptions.issuer = options.issuer;
     }

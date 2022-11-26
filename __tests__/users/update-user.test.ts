@@ -9,7 +9,7 @@ describe('PUT /user', () => {
 
   describe('given a valid request', () => {
     test('given all fields set should return http status code 200 and the user', async () => {
-      const userAndPassword = await usersClient.registerRandomUser();
+      const user = await usersClient.registerRandomUser();
 
       const requestBody = {
         user: {
@@ -23,7 +23,7 @@ describe('PUT /user', () => {
 
       const response = await request(app)
         .put(updateUserUrl)
-        .set('authorization', `Token ${userAndPassword.user.token}`)
+        .set('authorization', `Token ${user.user.token}`)
         .send(requestBody);
 
       expect(response.status).toBe(200);
@@ -37,12 +37,12 @@ describe('PUT /user', () => {
         },
       });
 
-      const loggedUserAndPassword = await usersClient.login(
+      const loggeduser = await usersClient.login(
         requestBody.user.email,
         requestBody.user.password
       );
 
-      expect(loggedUserAndPassword.user).toStrictEqual({
+      expect(loggeduser.user).toStrictEqual({
         email: requestBody.user.email,
         username: requestBody.user.username,
         token: expect.not.toBeEmpty(),
@@ -52,7 +52,7 @@ describe('PUT /user', () => {
     });
 
     test('given valid email should return http status code 200 and the user', async () => {
-      const userAndPassword = await usersClient.registerRandomUser();
+      const user = await usersClient.registerRandomUser();
 
       const requestBody = {
         user: {
@@ -62,75 +62,75 @@ describe('PUT /user', () => {
 
       const response = await request(app)
         .put(updateUserUrl)
-        .set('authorization', `Token ${userAndPassword.user.token}`)
+        .set('authorization', `Token ${user.user.token}`)
         .send(requestBody);
 
       expect(response.status).toBe(200);
       expect(response.body).toStrictEqual({
         user: {
           email: requestBody.user.email,
-          username: userAndPassword.user.username,
+          username: user.user.username,
           token: expect.not.toBeEmpty(),
-          bio: userAndPassword.user.bio,
-          image: userAndPassword.user.image,
+          bio: user.user.bio,
+          image: user.user.image,
         },
       });
 
-      const loggedUserAndPassword = await usersClient.login(
+      const loggeduser = await usersClient.login(
         requestBody.user.email,
-        userAndPassword.password
+        user.password
       );
 
-      expect(loggedUserAndPassword.user).toStrictEqual({
+      expect(loggeduser.user).toStrictEqual({
         email: requestBody.user.email,
-        username: userAndPassword.user.username,
+        username: user.user.username,
         token: expect.not.toBeEmpty(),
-        bio: userAndPassword.user.bio,
-        image: userAndPassword.user.image,
+        bio: user.user.bio,
+        image: user.user.image,
       });
     });
 
     test('given a same email as the calling user should return http status code 200 and the user', async () => {
-      const userAndPassword = await usersClient.registerRandomUser();
+      const user = await usersClient.registerRandomUser();
 
       const requestBody = {
         user: {
-          email: userAndPassword.user.email,
+          email: user.user.email,
         },
       };
 
       const response = await request(app)
         .put(updateUserUrl)
-        .set('authorization', `Token ${userAndPassword.user.token}`)
+        .set('authorization', `Token ${user.user.token}`)
         .send(requestBody);
 
       expect(response.status).toBe(200);
       expect(response.body).toStrictEqual({
         user: {
-          email: userAndPassword.user.email,
-          username: userAndPassword.user.username,
+          email: user.user.email,
+          username: user.user.username,
           token: expect.not.toBeEmpty(),
-          bio: userAndPassword.user.bio,
-          image: userAndPassword.user.image,
+          bio: user.user.bio,
+          image: user.user.image,
         },
       });
 
-      const loggedUserAndPassword = await usersClient.login(
-        userAndPassword.user.email,
-        userAndPassword.password
+      const loggeduser = await usersClient.login(
+        user.user.email,
+        user.password
       );
 
-      expect(loggedUserAndPassword.user).toStrictEqual({
-        email: userAndPassword.user.email,
-        username: userAndPassword.user.username,
+      expect(loggeduser.user).toStrictEqual({
+        email: user.user.email,
+        username: user.user.username,
         token: expect.not.toBeEmpty(),
-        bio: userAndPassword.user.bio,
-        image: userAndPassword.user.image,
+        bio: user.user.bio,
+        image: user.user.image,
       });
     });
 
     test('given a valid username should return http status code 200 and the user', async () => {
-      const userAndPassword = await usersClient.registerRandomUser();
+      const user = await usersClient.registerRandomUser();
 
       const requestBody = {
         user: {
@@ -140,76 +140,76 @@ describe('PUT /user', () => {
 
       const response = await request(app)
         .put(updateUserUrl)
-        .set('authorization', `Token ${userAndPassword.user.token}`)
+        .set('authorization', `Token ${user.user.token}`)
         .send(requestBody);
 
       expect(response.status).toBe(200);
       expect(response.body).toStrictEqual({
         user: {
-          email: userAndPassword.user.email,
+          email: user.user.email,
           username: requestBody.user.username,
           token: expect.not.toBeEmpty(),
-          bio: userAndPassword.user.bio,
-          image: userAndPassword.user.image,
+          bio: user.user.bio,
+          image: user.user.image,
         },
       });
 
-      const loggedUserAndPassword = await usersClient.login(
-        userAndPassword.user.email,
-        userAndPassword.password
+      const loggeduser = await usersClient.login(
+        user.user.email,
+        user.password
       );
 
-      expect(loggedUserAndPassword.user).toStrictEqual({
-        email: userAndPassword.user.email,
+      expect(loggeduser.user).toStrictEqual({
+        email: user.user.email,
         username: requestBody.user.username,
         token: expect.not.toBeEmpty(),
-        bio: userAndPassword.user.bio,
-        image: userAndPassword.user.image,
+        bio: user.user.bio,
+        image: user.user.image,
       });
     });
 
     test('given the same username as the calling user should return http status code 200 and the user', async () => {
-      const userAndPassword = await usersClient.registerRandomUser();
+      const user = await usersClient.registerRandomUser();
 
       const requestBody = {
         user: {
-          username: userAndPassword.user.username,
+          username: user.user.username,
         },
       };
 
       const response = await request(app)
         .put(updateUserUrl)
-        .set('authorization', `Token ${userAndPassword.user.token}`)
+        .set('authorization', `Token ${user.user.token}`)
         .send(requestBody);
 
       expect(response.status).toBe(200);
       expect(response.body).toStrictEqual({
         user: {
-          email: userAndPassword.user.email,
-          username: userAndPassword.user.username,
+          email: user.user.email,
+          username: user.user.username,
           token: expect.not.toBeEmpty(),
-          bio: userAndPassword.user.bio,
-          image: userAndPassword.user.image,
+          bio: user.user.bio,
+          image: user.user.image,
         },
       });
 
-      const loggedUserAndPassword = await usersClient.login(
-        userAndPassword.user.email,
-        userAndPassword.password
+      const loggeduser = await usersClient.login(
+        user.user.email,
+        user.password
       );
 
-      expect(loggedUserAndPassword.user).toStrictEqual({
-        email: userAndPassword.user.email,
-        username: userAndPassword.user.username,
+      expect(loggeduser.user).toStrictEqual({
+        email: user.user.email,
+        username: user.user.username,
         token: expect.not.toBeEmpty(),
-        bio: userAndPassword.user.bio,
-        image: userAndPassword.user.image,
+        bio: user.user.bio,
+        image: user.user.image,
       });
     });
   });
 
   test('given a valid password should return http status code 200 and the user', async () => {
-    const userAndPassword = await usersClient.registerRandomUser();
+    const user = await usersClient.registerRandomUser();
 
     const requestBody = {
       user: {
@@ -219,36 +219,36 @@ describe('PUT /user', () => {
 
     const response = await request(app)
       .put(updateUserUrl)
-      .set('authorization', `Token ${userAndPassword.user.token}`)
+      .set('authorization', `Token ${user.user.token}`)
       .send(requestBody);
 
     expect(response.status).toBe(200);
     expect(response.body).toStrictEqual({
       user: {
-        email: userAndPassword.user.email,
-        username: userAndPassword.user.username,
+        email: user.user.email,
+        username: user.user.username,
         token: expect.not.toBeEmpty(),
-        bio: userAndPassword.user.bio,
-        image: userAndPassword.user.image,
+        bio: user.user.bio,
+        image: user.user.image,
       },
     });
 
-    const loggedUserAndPassword = await usersClient.login(
-      userAndPassword.user.email,
+    const loggeduser = await usersClient.login(
+      user.user.email,
       requestBody.user.password
     );
 
-    expect(loggedUserAndPassword.user).toStrictEqual({
-      email: userAndPassword.user.email,
-      username: userAndPassword.user.username,
+    expect(loggeduser.user).toStrictEqual({
+      email: user.user.email,
+      username: user.user.username,
       token: expect.not.toBeEmpty(),
-      bio: userAndPassword.user.bio,
-      image: userAndPassword.user.image,
+      bio: user.user.bio,
+      image: user.user.image,
     });
   });
 
   test('given a valid bio should return http status code 200 and the user', async () => {
-    const userAndPassword = await usersClient.registerRandomUser();
+    const user = await usersClient.registerRandomUser();
 
     const requestBody = {
       user: {
@@ -258,36 +258,33 @@ describe('PUT /user', () => {
 
     const response = await request(app)
       .put(updateUserUrl)
-      .set('authorization', `Token ${userAndPassword.user.token}`)
+      .set('authorization', `Token ${user.user.token}`)
       .send(requestBody);
 
     expect(response.status).toBe(200);
     expect(response.body).toStrictEqual({
       user: {
-        email: userAndPassword.user.email,
-        username: userAndPassword.user.username,
+        email: user.user.email,
+        username: user.user.username,
         token: expect.not.toBeEmpty(),
         bio: requestBody.user.bio,
-        image: userAndPassword.user.image,
+        image: user.user.image,
       },
     });
 
-    const loggedUserAndPassword = await usersClient.login(
-      userAndPassword.user.email,
-      userAndPassword.password
-    );
+    const loggeduser = await usersClient.login(user.user.email, user.password);
 
-    expect(loggedUserAndPassword.user).toStrictEqual({
-      email: userAndPassword.user.email,
-      username: userAndPassword.user.username,
+    expect(loggeduser.user).toStrictEqual({
+      email: user.user.email,
+      username: user.user.username,
       token: expect.not.toBeEmpty(),
       bio: requestBody.user.bio,
-      image: userAndPassword.user.image,
+      image: user.user.image,
     });
   });
 
   test('given a valid image should return http status code 200 and the user', async () => {
-    const userAndPassword = await usersClient.registerRandomUser();
+    const user = await usersClient.registerRandomUser();
 
     const requestBody = {
       user: {
@@ -297,37 +294,34 @@ describe('PUT /user', () => {
 
     const response = await request(app)
       .put(updateUserUrl)
-      .set('authorization', `Token ${userAndPassword.user.token}`)
+      .set('authorization', `Token ${user.user.token}`)
       .send(requestBody);
 
     expect(response.status).toBe(200);
     expect(response.body).toStrictEqual({
       user: {
-        email: userAndPassword.user.email,
-        username: userAndPassword.user.username,
+        email: user.user.email,
+        username: user.user.username,
         token: expect.not.toBeEmpty(),
-        bio: userAndPassword.user.bio,
+        bio: user.user.bio,
         image: requestBody.user.image,
       },
     });
 
-    const loggedUserAndPassword = await usersClient.login(
-      userAndPassword.user.email,
-      userAndPassword.password
-    );
+    const loggeduser = await usersClient.login(user.user.email, user.password);
 
-    expect(loggedUserAndPassword.user).toStrictEqual({
-      email: userAndPassword.user.email,
-      username: userAndPassword.user.username,
+    expect(loggeduser.user).toStrictEqual({
+      email: user.user.email,
+      username: user.user.username,
       token: expect.not.toBeEmpty(),
-      bio: userAndPassword.user.bio,
+      bio: user.user.bio,
       image: requestBody.user.image,
     });
   });
 
   describe('email validation', () => {
     test('given an invalid email should return http status code 422 and an errors object', async () => {
-      const userAndPassword = await usersClient.registerRandomUser();
+      const user = await usersClient.registerRandomUser();
 
       const requestBody = {
         user: {
@@ -337,7 +331,7 @@ describe('PUT /user', () => {
 
       const response = await request(app)
         .put(updateUserUrl)
-        .set('authorization', `Token ${userAndPassword.user.token}`)
+        .set('authorization', `Token ${user.user.token}`)
         .send(requestBody);
 
       expect(response.status).toBe(422);
@@ -349,18 +343,18 @@ describe('PUT /user', () => {
     });
 
     test('given email is taken should return http status code 422 and an errors object', async () => {
-      const userAndPassword = await usersClient.registerRandomUser();
-      const anotherUserAndPassword = await usersClient.registerRandomUser();
+      const user = await usersClient.registerRandomUser();
+      const anotheruser = await usersClient.registerRandomUser();
 
       const requestBody = {
         user: {
-          email: anotherUserAndPassword.user.email,
+          email: anotheruser.user.email,
         },
       };
 
       const response = await request(app)
         .put(updateUserUrl)
-        .set('authorization', `Token ${userAndPassword.user.token}`)
+        .set('authorization', `Token ${user.user.token}`)
         .send(requestBody);
 
       expect(response.status).toBe(422);
@@ -374,18 +368,18 @@ describe('PUT /user', () => {
 
   describe('username validation', () => {
     test('given username is taken should return http status code 422 and an errors object', async () => {
-      const userAndPassword = await usersClient.registerRandomUser();
-      const anotherUserAndPassword = await usersClient.registerRandomUser();
+      const user = await usersClient.registerRandomUser();
+      const anotheruser = await usersClient.registerRandomUser();
 
       const requestBody = {
         user: {
-          username: anotherUserAndPassword.user.username,
+          username: anotheruser.user.username,
         },
       };
 
       const response = await request(app)
         .put(updateUserUrl)
-        .set('authorization', `Token ${userAndPassword.user.token}`)
+        .set('authorization', `Token ${user.user.token}`)
         .send(requestBody);
 
       expect(response.status).toBe(422);
@@ -474,9 +468,14 @@ describe('PUT /user', () => {
     });
 
     test('given token is expired should return http status code 401 and an errors object', async () => {
+      const user = await usersClient.registerRandomUser();
+
       const expiresInSeconds = 1;
 
-      const token = jwt.getRandomToken({expiresInSeconds});
+      const token = jwt.getRandomToken({
+        subject: user.user.id,
+        expiresInSeconds,
+      });
 
       await new Promise(r => setTimeout(r, expiresInSeconds * 1000 + 1));
 

@@ -1,5 +1,6 @@
 import {celebrate, Joi, Segments} from 'celebrate';
 import * as express from 'express';
+import {StatusCodes} from 'http-status-codes';
 import {NotFoundError, UnauthorizedError} from '../errors';
 import {Auth} from '../middleware';
 import {Profile, ProfilesService} from '../profiles';
@@ -107,7 +108,7 @@ class ArticlesRouter {
 
           const articleDto = new ArticleDto(article, 0, false, authorProfile);
 
-          return res.status(201).json(articleDto);
+          return res.status(StatusCodes.CREATED).json(articleDto);
         } catch (err) {
           return next(err);
         }
@@ -183,7 +184,7 @@ class ArticlesRouter {
 
           const commentDto = new CommentDto(comment, authorProfile);
 
-          return res.status(201).json(commentDto);
+          return res.status(StatusCodes.CREATED).json(commentDto);
         } catch (err) {
           return next(err);
         }
@@ -374,7 +375,7 @@ class ArticlesRouter {
 
           await this.articlesService.deleteArticleBySlug(slug);
 
-          return res.sendStatus(204);
+          return res.sendStatus(StatusCodes.NO_CONTENT);
         } catch (err) {
           return next(err);
         }
@@ -410,6 +411,48 @@ class ArticlesRouter {
           );
 
           return res.json(articleDto);
+        } catch (err) {
+          return next(err);
+        }
+      }
+    );
+
+    router.delete(
+      '/articles/:slug/comments/:commentId',
+      this.auth.requireAuth,
+      async (req, res, next) => {
+        try {
+          const author = req.user!;
+
+          const {slug, commentId} = req.params;
+
+          const comment = await this.articlesService.getCommentById(commentId);
+
+          if (!comment) {
+            throw new NotFoundError(`comment "${commentId}" not found`);
+          }
+
+          if (author.id !== comment.authorId) {
+            throw new UnauthorizedError(
+              `user ${author.id} unauthorized to delete comment ${comment.id}`
+            );
+          }
+
+          const article = await this.articlesService.getArticleBySlug(slug);
+
+          if (!article) {
+            throw new NotFoundError(`slug "${slug}" not found`);
+          }
+
+          if (comment.articleId !== article.id) {
+            throw new NotFoundError(
+              `comment "${commentId}" not found in article with slug ${slug}`
+            );
+          }
+
+          await this.articlesService.deleteCommentById(comment.id);
+
+          return res.sendStatus(StatusCodes.NO_CONTENT);
         } catch (err) {
           return next(err);
         }

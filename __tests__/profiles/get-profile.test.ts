@@ -162,13 +162,18 @@ describe('POST /profiles/:username/follow', () => {
     });
 
     test('given token is expired should return http status code 401 and an errors object', async () => {
-      const expiresInSeconds = 1;
-
-      const token = jwt.getRandomToken({expiresInSeconds});
-
-      await new Promise(r => setTimeout(r, expiresInSeconds * 1000 + 1));
+      const follower = await usersClient.registerRandomUser();
 
       const followee = await usersClient.registerRandomUser();
+
+      const expiresInSeconds = 1;
+
+      const token = jwt.getRandomToken({
+        subject: follower.user.id,
+        expiresInSeconds,
+      });
+
+      await new Promise(r => setTimeout(r, expiresInSeconds * 1000 + 1));
 
       const response = await request(app)
         .get(makeGetProfileUrl(followee.user.username))

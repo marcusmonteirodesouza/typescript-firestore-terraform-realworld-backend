@@ -241,17 +241,20 @@ describe('GET /articles/:slug', () => {
     });
 
     test('given token is expired should return http status code 401 and an errors object', async () => {
-      const expiresInSeconds = 1;
-
-      const token = jwt.getRandomToken({expiresInSeconds});
-
-      await new Promise(r => setTimeout(r, expiresInSeconds * 1000 + 1));
-
       const author = await usersClient.registerRandomUser();
 
       const article = await articlesClient.createRandomArticle(
         author.user.token
       );
+
+      const expiresInSeconds = 1;
+
+      const token = jwt.getRandomToken({
+        subject: author.user.id,
+        expiresInSeconds,
+      });
+
+      await new Promise(r => setTimeout(r, expiresInSeconds * 1000 + 1));
 
       const response = await request(app)
         .get(makeGetArticleUrl(article.article.slug))

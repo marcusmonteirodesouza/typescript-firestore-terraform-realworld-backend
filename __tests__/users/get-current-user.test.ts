@@ -8,21 +8,21 @@ describe('GET /user', () => {
   const getCurrentUserUrl = '/user';
 
   test('given a valid request should return http status code 200 and the user', async () => {
-    const userAndPassword = await usersClient.registerRandomUser();
+    const user = await usersClient.registerRandomUser();
 
     const response = await request(app)
       .get(getCurrentUserUrl)
-      .set('authorization', `Token ${userAndPassword.user.token}`)
+      .set('authorization', `Token ${user.user.token}`)
       .send();
 
     expect(response.status).toBe(200);
     expect(response.body).toStrictEqual({
       user: {
-        email: userAndPassword.user.email,
-        username: userAndPassword.user.username,
+        email: user.user.email,
+        username: user.user.username,
         token: expect.not.toBeEmpty(),
-        bio: userAndPassword.user.bio,
-        image: userAndPassword.user.image,
+        bio: user.user.bio,
+        image: user.user.image,
       },
     });
   });
@@ -73,9 +73,11 @@ describe('GET /user', () => {
   });
 
   test('given token is expired should return http status code 401 and an errors object', async () => {
+    const user = await usersClient.registerRandomUser();
+
     const expiresInSeconds = 1;
 
-    const token = jwt.getRandomToken({expiresInSeconds});
+    const token = jwt.getRandomToken({subject: user.user.id, expiresInSeconds});
 
     await new Promise(r => setTimeout(r, expiresInSeconds * 1000 + 1));
 

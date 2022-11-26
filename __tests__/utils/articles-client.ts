@@ -55,6 +55,20 @@ class ArticlesClient {
 
     return response.body;
   }
+
+  async getCommentsFromArticle(articleSlug: string, token?: string) {
+    let req = request(app).get(`/articles/${articleSlug}/comments`);
+
+    if (token) {
+      req = req.set('authorization', `Token ${token}`);
+    }
+
+    const response = await req.send();
+
+    assert.strictEqual(response.statusCode, 200);
+
+    return response.body;
+  }
 }
 
 const articlesClient = new ArticlesClient();

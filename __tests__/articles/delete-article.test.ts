@@ -71,90 +71,101 @@ describe('DELETE /articles/:slug', () => {
         },
       });
     });
-  });
 
-  test('given user is not found should return http status code 401 and an errors object', async () => {
-    const token = jwt.getRandomToken();
+    test('given user is not found should return http status code 401 and an errors object', async () => {
+      const token = jwt.getRandomToken();
 
-    const author = await usersClient.registerRandomUser();
+      const author = await usersClient.registerRandomUser();
 
-    const article = await articlesClient.createRandomArticle(author.user.token);
+      const article = await articlesClient.createRandomArticle(
+        author.user.token
+      );
 
-    const response = await request(app)
-      .delete(makeDeleteArticleUrl(article.article.slug))
-      .set('authorization', `Token ${token}`)
-      .send();
+      const response = await request(app)
+        .delete(makeDeleteArticleUrl(article.article.slug))
+        .set('authorization', `Token ${token}`)
+        .send();
 
-    expect(response.status).toBe(401);
-    expect(response.body).toStrictEqual({
-      errors: {
-        body: ['unauthorized'],
-      },
+      expect(response.status).toBe(401);
+      expect(response.body).toStrictEqual({
+        errors: {
+          body: ['unauthorized'],
+        },
+      });
     });
-  });
 
-  test("given user is not the article's author should return http status code 401 and an errors object", async () => {
-    const author = await usersClient.registerRandomUser();
-    const user = await usersClient.registerRandomUser();
+    test("given user is not the article's author should return http status code 401 and an errors object", async () => {
+      const author = await usersClient.registerRandomUser();
+      const user = await usersClient.registerRandomUser();
 
-    const article = await articlesClient.createRandomArticle(author.user.token);
+      const article = await articlesClient.createRandomArticle(
+        author.user.token
+      );
 
-    const response = await request(app)
-      .delete(makeDeleteArticleUrl(article.article.slug))
-      .set('authorization', `Token ${user.user.token}`)
-      .send();
+      const response = await request(app)
+        .delete(makeDeleteArticleUrl(article.article.slug))
+        .set('authorization', `Token ${user.user.token}`)
+        .send();
 
-    expect(response.status).toBe(401);
-    expect(response.body).toStrictEqual({
-      errors: {
-        body: ['unauthorized'],
-      },
+      expect(response.status).toBe(401);
+      expect(response.body).toStrictEqual({
+        errors: {
+          body: ['unauthorized'],
+        },
+      });
     });
-  });
 
-  test('given token has wrong issuer should return http status code 401 and an errors object', async () => {
-    const issuer = faker.internet.url();
+    test('given token has wrong issuer should return http status code 401 and an errors object', async () => {
+      const issuer = faker.internet.url();
 
-    const token = jwt.getRandomToken({issuer});
+      const token = jwt.getRandomToken({issuer});
 
-    const author = await usersClient.registerRandomUser();
+      const author = await usersClient.registerRandomUser();
 
-    const article = await articlesClient.createRandomArticle(author.user.token);
+      const article = await articlesClient.createRandomArticle(
+        author.user.token
+      );
 
-    const response = await request(app)
-      .delete(makeDeleteArticleUrl(article.article.slug))
-      .set('authorization', `Token ${token}`)
-      .send();
+      const response = await request(app)
+        .delete(makeDeleteArticleUrl(article.article.slug))
+        .set('authorization', `Token ${token}`)
+        .send();
 
-    expect(response.status).toBe(401);
-    expect(response.body).toStrictEqual({
-      errors: {
-        body: ['unauthorized'],
-      },
+      expect(response.status).toBe(401);
+      expect(response.body).toStrictEqual({
+        errors: {
+          body: ['unauthorized'],
+        },
+      });
     });
-  });
 
-  test('given token is expired should return http status code 401 and an errors object', async () => {
-    const expiresInSeconds = 1;
+    test('given token is expired should return http status code 401 and an errors object', async () => {
+      const author = await usersClient.registerRandomUser();
 
-    const token = jwt.getRandomToken({expiresInSeconds});
+      const article = await articlesClient.createRandomArticle(
+        author.user.token
+      );
 
-    await new Promise(r => setTimeout(r, expiresInSeconds * 1000 + 1));
+      const expiresInSeconds = 1;
 
-    const author = await usersClient.registerRandomUser();
+      const token = jwt.getRandomToken({
+        subject: author.user.id,
+        expiresInSeconds,
+      });
 
-    const article = await articlesClient.createRandomArticle(author.user.token);
+      await new Promise(r => setTimeout(r, expiresInSeconds * 1000 + 1));
 
-    const response = await request(app)
-      .delete(makeDeleteArticleUrl(article.article.slug))
-      .set('authorization', `Token ${token}`)
-      .send();
+      const response = await request(app)
+        .delete(makeDeleteArticleUrl(article.article.slug))
+        .set('authorization', `Token ${token}`)
+        .send();
 
-    expect(response.status).toBe(401);
-    expect(response.body).toStrictEqual({
-      errors: {
-        body: ['unauthorized'],
-      },
+      expect(response.status).toBe(401);
+      expect(response.body).toStrictEqual({
+        errors: {
+          body: ['unauthorized'],
+        },
+      });
     });
   });
 });
