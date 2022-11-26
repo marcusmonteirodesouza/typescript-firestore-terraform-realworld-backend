@@ -32,6 +32,7 @@ const profilesRouter = new ProfilesRouter(auth, usersService, profilesService)
 const articlesRouter = new ArticlesRouter(
   auth,
   articlesService,
+  usersService,
   profilesService
 ).router;
 
