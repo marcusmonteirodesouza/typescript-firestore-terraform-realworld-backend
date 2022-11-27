@@ -7,7 +7,7 @@ class ProfilesClient {
 
   async followUser(token: string, username: string) {
     const response = await request(app)
-      .post(`/profiles/${username}/follow`)
+      .post(`/api/profiles/${username}/follow`)
       .set('authorization', `Token ${token}`)
       .send();
 
@@ -17,7 +17,7 @@ class ProfilesClient {
   }
 
   async getProfile(username: string, token?: string) {
-    let req = request(app).get(`/profiles/${username}`);
+    let req = request(app).get(`/api/profiles/${username}`);
 
     if (token) {
       req = req.set('authorization', `Token ${token}`);

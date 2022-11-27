@@ -1,6 +1,6 @@
 terraform {
   backend "gcs" {
-    bucket = "probably-secondly-neat-jaybird"
+    # bucket = ""
     prefix = "bootstrap"
   }
 }

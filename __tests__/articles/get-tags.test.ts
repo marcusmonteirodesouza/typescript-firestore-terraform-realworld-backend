@@ -3,8 +3,8 @@ import * as request from 'supertest';
 import {app} from '../../src/app';
 import {articlesClient, clearFirestore, usersClient} from '../utils';
 
-describe('GET /tags', () => {
-  const getTagsUrl = '/tags';
+describe('GET /api/tags', () => {
+  const getTagsUrl = '/api/tags';
 
   beforeEach(async () => {
     await clearFirestore();

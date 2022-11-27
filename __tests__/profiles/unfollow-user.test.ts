@@ -4,9 +4,9 @@ import {faker} from '@faker-js/faker';
 import {app} from '../../src/app';
 import {jwt, profilesClient, usersClient} from '../utils';
 
-describe('DELETE /profiles/:username/follow', () => {
+describe('DELETE /api/profiles/:username/follow', () => {
   function makeUnfollowUserUrl(username: string) {
-    return `/profiles/${username}/follow`;
+    return `/api/profiles/${username}/follow`;
   }
 
   describe('given a valid request', () => {

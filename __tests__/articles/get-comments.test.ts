@@ -5,9 +5,9 @@ import {faker} from '@faker-js/faker';
 import {app} from '../../src/app';
 import {articlesClient, jwt, profilesClient, usersClient} from '../utils';
 
-describe('GET /articles/:slug/comments', () => {
+describe('GET /api/articles/:slug/comments', () => {
   function makeGetCommentsUrl(slug: string) {
-    return `/articles/${slug}/comments`;
+    return `/api/articles/${slug}/comments`;
   }
 
   describe('given a valid request', () => {

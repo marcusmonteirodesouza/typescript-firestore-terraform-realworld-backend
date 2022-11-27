@@ -4,8 +4,8 @@ import {faker} from '@faker-js/faker';
 import {app} from '../../src/app';
 import {usersClient} from '../utils';
 
-describe('POST /users', () => {
-  const registerUserUrl = '/users';
+describe('POST /api/users', () => {
+  const registerUserUrl = '/api/users';
 
   describe('given a valid request', () => {
     test('should return http status code 201 and the created user', async () => {

@@ -22,6 +22,8 @@ For more information on how to this works with other frontends/backends, head ov
 
 ## [Google Cloud](https://cloud.google.com/)
 
+### Bootstrap
+
 1. Create an [Organization](https://cloud.google.com/resource-manager/docs/creating-managing-organization) on Google Cloud.
 1. Create a [Folder](https://cloud.google.com/resource-manager/docs/creating-managing-folders) on your Organization to create your projects in.
 1. Create a [Billing Account](https://cloud.google.com/billing/docs/how-to/manage-billing-account#create_a_new_billing_account).
@@ -37,3 +39,6 @@ For more information on how to this works with other frontends/backends, head ov
 1. Uncomment the `backend.tf` file's contents and update the `bucket` argument to the value of the `tfstate_bucket` output.
 1. Run `terraform init` and type `yes`.
 1. 1. [Manually connect the Github repositories via the console in CloudBuild](https://cloud.google.com/build/docs/automating-builds/github/connect-repo-github). Do not create a Trigger, just click `DONE` once the repository is connected.
+1. Run `terraform apply`.
+
+### Deploy

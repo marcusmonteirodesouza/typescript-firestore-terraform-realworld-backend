@@ -5,9 +5,9 @@ import {faker} from '@faker-js/faker';
 import {app} from '../../src/app';
 import {articlesClient, jwt, usersClient} from '../utils';
 
-describe('DELETE /articles/:slug', () => {
+describe('DELETE /api/articles/:slug', () => {
   function makeDeleteArticleUrl(slug: string) {
-    return `/articles/${slug}`;
+    return `/api/articles/${slug}`;
   }
 
   describe('given a valid request', () => {

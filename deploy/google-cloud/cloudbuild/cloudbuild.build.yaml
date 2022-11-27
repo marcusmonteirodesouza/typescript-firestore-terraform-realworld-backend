@@ -23,5 +23,10 @@ steps:
         if [ "${_DEPLOY}" == true ]; then
           cd deploy/google-cloud/terraform/deploy
           terraform init "-backend-config=bucket=${_TFSTATE_BUCKET}"
-          terraform apply --auto-approve
+          terraform apply \
+            -var="project_id=${PROJECT_ID}" \
+            -var="region=${_REGION}" \
+            -var="backend_image=${_BACKEND_IMAGE_FULL}" \
+            -var="domain=${_DOMAIN}" \
+            --auto-approve
         fi

@@ -47,3 +47,8 @@ variable "deploy_on_push_to_branch" {
   type        = bool
   description = "Set to true if you want to trigger a deployment when pushing to a branch."
 }
+
+variable "domain" {
+  type        = string
+  description = "The domain name."
+}
