@@ -23,7 +23,7 @@ class UsersClient {
       },
     };
 
-    const response = await request(app).post('/users').send(requestBody);
+    const response = await request(app).post('/api/users').send(requestBody);
 
     assert.strictEqual(response.statusCode, 201);
 
@@ -64,7 +64,9 @@ class UsersClient {
       },
     };
 
-    const response = await request(app).post('/users/login').send(requestBody);
+    const response = await request(app)
+      .post('/api/users/login')
+      .send(requestBody);
 
     assert.strictEqual(response.statusCode, 200);
 
@@ -80,7 +82,7 @@ class UsersClient {
     };
 
     const response = await request(app)
-      .put('/user')
+      .put('/api/user')
       .set('authorization', `Token ${token}`)
       .send(requestBody);
 

@@ -44,11 +44,11 @@ const app = express();
 
 app.use(express.json());
 
-app.use(usersRouter);
+app.use('/api', usersRouter);
 
-app.use(profilesRouter);
+app.use('/api', profilesRouter);
 
-app.use(articlesRouter);
+app.use('/api', articlesRouter);
 
 app.use(
   async (

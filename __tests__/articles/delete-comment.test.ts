@@ -5,9 +5,9 @@ import {faker} from '@faker-js/faker';
 import {app} from '../../src/app';
 import {articlesClient, jwt, usersClient} from '../utils';
 
-describe('DELETE /articles/:slug/comments/:commentId', () => {
+describe('DELETE /api/articles/:slug/comments/:commentId', () => {
   function makeDeleteCommentUrl(articleSlug: string, commentId: string) {
-    return `/articles/${articleSlug}/comments/${commentId}`;
+    return `/api/articles/${articleSlug}/comments/${commentId}`;
   }
 
   describe('given a valid request', () => {

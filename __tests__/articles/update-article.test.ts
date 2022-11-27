@@ -5,9 +5,9 @@ import {faker} from '@faker-js/faker';
 import {app} from '../../src/app';
 import {articlesClient, clearFirestore, jwt, usersClient} from '../utils';
 
-describe('PUT /articles/:slug', () => {
+describe('PUT /api/articles/:slug', () => {
   function makeUpdateArticleUrl(slug: string) {
-    return `/articles/${slug}`;
+    return `/api/articles/${slug}`;
   }
 
   beforeEach(async () => {

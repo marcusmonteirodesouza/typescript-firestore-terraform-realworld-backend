@@ -5,9 +5,9 @@ import {faker} from '@faker-js/faker';
 import {app} from '../../src/app';
 import {articlesClient, jwt, usersClient} from '../utils';
 
-describe('DELETE /articles/:slug/favorite', () => {
+describe('DELETE /api/articles/:slug/favorite', () => {
   function makeUnfavoriteArticleUrl(slug: string) {
-    return `/articles/${slug}/favorite`;
+    return `/api/articles/${slug}/favorite`;
   }
 
   describe('given a valid request', () => {

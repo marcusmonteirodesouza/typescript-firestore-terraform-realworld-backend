@@ -4,8 +4,8 @@ import {faker} from '@faker-js/faker';
 import {app} from '../../src/app';
 import {articlesClient, clearFirestore, jwt, usersClient} from '../utils';
 
-describe('POST /articles', () => {
-  const createArticleUrl = '/articles';
+describe('POST /api/articles', () => {
+  const createArticleUrl = '/api/articles';
 
   beforeEach(async () => {
     await clearFirestore();

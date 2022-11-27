@@ -4,9 +4,9 @@ import {faker} from '@faker-js/faker';
 import {app} from '../../src/app';
 import {jwt, profilesClient, usersClient} from '../utils';
 
-describe('POST /profiles/:username/follow', () => {
+describe('POST /api/profiles/:username/follow', () => {
   function makeGetProfileUrl(username: string) {
-    return `/profiles/${username}`;
+    return `/api/profiles/${username}`;
   }
 
   describe('given a valid request', () => {

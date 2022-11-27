@@ -33,6 +33,7 @@ module "cloudbuild" {
   github_repo_branch       = var.github_repo_branch
   github_repo_commit_tag   = var.github_repo_commit_tag
   deploy_on_push_to_branch = var.deploy_on_push_to_branch
+  domain                   = var.domain
   backend_image            = module.artifact_registry.backend_image
 }
 

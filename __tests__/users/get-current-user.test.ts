@@ -4,8 +4,8 @@ import {faker} from '@faker-js/faker';
 import {app} from '../../src/app';
 import {usersClient, jwt} from '../utils';
 
-describe('GET /user', () => {
-  const getCurrentUserUrl = '/user';
+describe('GET /api/user', () => {
+  const getCurrentUserUrl = '/api/user';
 
   test('given a valid request should return http status code 200 and the user', async () => {
     const user = await usersClient.registerRandomUser();

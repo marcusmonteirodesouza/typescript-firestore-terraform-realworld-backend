@@ -4,8 +4,8 @@ import {faker} from '@faker-js/faker';
 import {app} from '../../src/app';
 import {usersClient, jwt} from '../utils';
 
-describe('PUT /user', () => {
-  const updateUserUrl = '/user';
+describe('PUT /api/user', () => {
+  const updateUserUrl = '/api/user';
 
   describe('given a valid request', () => {
     test('given all fields set should return http status code 200 and the user', async () => {

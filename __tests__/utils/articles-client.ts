@@ -24,7 +24,7 @@ class ArticlesClient {
     };
 
     const response = await request(app)
-      .post('/articles')
+      .post('/api/articles')
       .set('authorization', `Token ${token}`)
       .send(requestBody);
 
@@ -48,7 +48,7 @@ class ArticlesClient {
     };
 
     const response = await request(app)
-      .put(`/articles/${slug}`)
+      .put(`/api/articles/${slug}`)
       .set('authorization', `Token ${token}`)
       .send(requestBody);
 
@@ -59,7 +59,7 @@ class ArticlesClient {
 
   async favoriteArticle(token: string, articleSlug: string) {
     const response = await request(app)
-      .post(`/articles/${articleSlug}/favorite`)
+      .post(`/api/articles/${articleSlug}/favorite`)
       .set('authorization', `Token ${token}`)
       .send();
 
@@ -76,7 +76,7 @@ class ArticlesClient {
     };
 
     const response = await request(app)
-      .post(`/articles/${articleSlug}/comments`)
+      .post(`/api/articles/${articleSlug}/comments`)
       .set('authorization', `Token ${token}`)
       .send(requestBody);
 
@@ -86,7 +86,7 @@ class ArticlesClient {
   }
 
   async getCommentsFromArticle(articleSlug: string, token?: string) {
-    let req = request(app).get(`/articles/${articleSlug}/comments`);
+    let req = request(app).get(`/api/articles/${articleSlug}/comments`);
 
     if (token) {
       req = req.set('authorization', `Token ${token}`);

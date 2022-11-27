@@ -10,8 +10,8 @@ import {
   profilesClient,
 } from '../utils';
 
-describe('GET /articles/:slug', () => {
-  const listArticlesUrl = '/articles';
+describe('GET /api/articles/:slug', () => {
+  const listArticlesUrl = '/api/articles';
 
   beforeEach(async () => {
     await clearFirestore();

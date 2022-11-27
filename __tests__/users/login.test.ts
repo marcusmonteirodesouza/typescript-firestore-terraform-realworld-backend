@@ -4,8 +4,8 @@ import {faker} from '@faker-js/faker';
 import {app} from '../../src/app';
 import {usersClient} from '../utils';
 
-describe('POST /users/login', () => {
-  const loginUrl = '/users/login';
+describe('POST /api/users/login', () => {
+  const loginUrl = '/api/users/login';
 
   describe('given a valid request', () => {
     test('should return http status code 200 and the user', async () => {
