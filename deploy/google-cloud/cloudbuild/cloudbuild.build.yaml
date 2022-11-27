@@ -9,7 +9,13 @@ steps:
       - |
         cd deploy/google-cloud/terraform/_build
         terraform init "-backend-config=bucket=${_TFSTATE_BUCKET}"
-        terraform apply --auto-approve
+        terraform apply \
+          -var="project_id=${PROJECT_ID}" \
+          -var="region=${_REGION}" \
+          -var="git_commit_sha=${COMMIT_SHA}" \
+          -var="backend_image=${_BACKEND_IMAGE}" \
+          --auto-approve
+
   - id: 'tf deploy'
     name: 'hashicorp/terraform:${_TF_VERSION}'
     entrypoint: 'sh'

@@ -37,3 +37,8 @@ variable "deploy_on_push_to_branch" {
   type        = bool
   description = "Set to true if you want to trigger a deployment when pushing to a branch."
 }
+
+variable "backend_image" {
+  type        = string
+  description = "The Backend Docker image."
+}
