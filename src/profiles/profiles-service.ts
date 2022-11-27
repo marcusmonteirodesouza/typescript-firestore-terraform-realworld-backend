@@ -51,11 +51,11 @@ class ProfilesService {
 
     const snapshot = await this.firestore
       .collection(this.followsCollection)
-      .select('followedId')
+      .select('followeeId')
       .where('followerId', '==', follower.id)
       .get();
 
-    return snapshot.docs.map(doc => doc.data().followedId);
+    return snapshot.docs.map(doc => doc.data().followeeId);
   }
 
   async unfollowUser(followerId: string, followeeId: string): Promise<void> {
