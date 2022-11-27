@@ -1,21 +1,19 @@
 substitutions:
   _TF_VERSION: 1.3.5
+  _BACKEND_IMAGE_FULL: '${_BACKEND_IMAGE}:${COMMIT_SHA}'
 steps:
-  - id: 'tf build'
-    name: 'hashicorp/terraform:${_TF_VERSION}'
-    entrypoint: 'sh'
+  - id: 'docker build'
+    name: 'gcr.io/cloud-builders'
     args:
-      - '-c'
-      - |
-        cd deploy/google-cloud/terraform/_build
-        terraform init "-backend-config=bucket=${_TFSTATE_BUCKET}"
-        terraform apply \
-          -var="project_id=${PROJECT_ID}" \
-          -var="region=${_REGION}" \
-          -var="git_commit_sha=${COMMIT_SHA}" \
-          -var="backend_image=${_BACKEND_IMAGE}" \
-          --auto-approve
-
+      - 'build'
+      - '--tag'
+      - '${_BACKEND_IMAGE_FULL}'
+      - '.'
+  - id: 'docker push'
+    name: 'gcr.io/cloud-builders'
+    args:
+      - 'push'
+      - '${_BACKEND_IMAGE_FULL}'
   - id: 'tf deploy'
     name: 'hashicorp/terraform:${_TF_VERSION}'
     entrypoint: 'sh'
