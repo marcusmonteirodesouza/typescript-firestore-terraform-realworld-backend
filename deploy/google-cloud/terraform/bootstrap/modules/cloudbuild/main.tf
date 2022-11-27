@@ -2,7 +2,6 @@ resource "google_cloudbuild_trigger" "push_to_branch" {
   project     = var.project_id
   name        = "github-push-to-${var.github_repo_branch}"
   description = "GitHub Repository Trigger ${var.github_repo_owner}/${var.github_repo_name} (${var.github_repo_branch})"
-  location    = var.region
 
   github {
     owner = var.github_repo_owner
@@ -24,7 +23,6 @@ resource "google_cloudbuild_trigger" "tag_commit" {
   project     = var.project_id
   name        = "github-tag-commit"
   description = "GitHub Repository Tag Commit Trigger ${var.github_repo_commit_tag}"
-  location    = var.region
 
   github {
     owner = var.github_repo_owner
