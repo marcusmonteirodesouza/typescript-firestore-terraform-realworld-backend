@@ -2,8 +2,10 @@ locals {
   enable_apis = [
     "artifactregistry.googleapis.com",
     "cloudbuild.googleapis.com",
-    "secretmanager.googleapis.com",
-    "run.googleapis.com"
+    "cloudresourcemanager.googleapis.com",
+    "iam.googleapis.com",
+    "run.googleapis.com",
+    "secretmanager.googleapis.com"
   ]
 }
 

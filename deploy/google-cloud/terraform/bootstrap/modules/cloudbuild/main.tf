@@ -1,3 +1,28 @@
+locals {
+  cloudbuild_sa_email = "${data.google_project.project.number}@cloudbuild.gserviceaccount.com"
+
+  cloudbuild_sa_project_roles = [
+    "roles/compute.admin",
+    "roles/iam.serviceAccountCreator",
+    "roles/iam.serviceAccountUser",
+    "roles/run.admin",
+    "roles/secretmanager.admin",
+  ]
+}
+
+data "google_project" "project" {
+  project_id = var.project_id
+}
+
+# Cloud Build Service Account Roles
+resource "google_project_iam_member" "cloudbuild_sa" {
+  for_each = toset(local.cloudbuild_sa_project_roles)
+  project  = var.project_id
+  role     = each.value
+  member   = "serviceAccount:${local.cloudbuild_sa_email}"
+}
+
+# Cloud Build Triggers
 resource "google_cloudbuild_trigger" "push_to_branch" {
   project     = var.project_id
   name        = "github-push-to-${var.github_repo_branch}"
