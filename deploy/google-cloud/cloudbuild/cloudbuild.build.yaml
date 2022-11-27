@@ -3,14 +3,14 @@ substitutions:
   _BACKEND_IMAGE_FULL: '${_BACKEND_IMAGE}:${COMMIT_SHA}'
 steps:
   - id: 'docker build'
-    name: 'gcr.io/cloud-builders'
+    name: 'gcr.io/cloud-builders/docker'
     args:
       - 'build'
       - '--tag'
       - '${_BACKEND_IMAGE_FULL}'
       - '.'
   - id: 'docker push'
-    name: 'gcr.io/cloud-builders'
+    name: 'gcr.io/cloud-builders/docker'
     args:
       - 'push'
       - '${_BACKEND_IMAGE_FULL}'
