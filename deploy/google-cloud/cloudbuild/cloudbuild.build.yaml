@@ -7,7 +7,7 @@ steps:
     args:
       - '-c'
       - |
-        cd deploy/google-cloud/terraform/build
+        cd deploy/google-cloud/terraform/_build
         terraform init "-backend-config=bucket=${_TFSTATE_BUCKET}"
         terraform apply --auto-approve
   - id: 'tf deploy'
