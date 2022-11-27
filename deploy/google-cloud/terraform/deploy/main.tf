@@ -17,15 +17,15 @@ module "backend" {
   jwt_seconds_to_expiration = 86400
 }
 
-resource "google_compute_address" "load_balancer" {
-  name = "load-balancer-address"
+resource "google_compute_global_address" "https_load_balancer" {
+  name = "https-load-balancer-address"
 }
 
-module "load_balancer" {
-  source = "./modules/load_balancer"
+module "https_load_balancer" {
+  source = "./modules/https_load_balancer"
 
   region          = var.region
-  ip_address      = google_compute_address.load_balancer.address
+  ip_address      = google_compute_global_address.https_load_balancer.address
   domain          = var.domain
   backend_service = module.backend.service
 }
