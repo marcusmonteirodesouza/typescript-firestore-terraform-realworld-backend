@@ -9,6 +9,7 @@ import {AlreadyExistsError, NotFoundError} from '../errors';
 import {UsersService} from '../users';
 import {Article} from './article';
 import {Comment} from './comment';
+import {ProfilesService} from '../profiles';
 
 interface CreateArticleParams {
   title: string;
@@ -25,6 +26,12 @@ interface ListArticlesParams {
   tag?: string;
   authorId?: string;
   favoritedByUserId?: string;
+  limit?: number;
+  offset?: number;
+}
+
+interface UserFeedParams {
+  userId: string;
   limit?: number;
   offset?: number;
 }
@@ -98,7 +105,8 @@ class ArticlesService {
 
   constructor(
     private readonly firestore: Firestore,
-    private readonly usersService: UsersService
+    private readonly usersService: UsersService,
+    private readonly profilesService: ProfilesService
   ) {}
 
   async createArticle(
@@ -230,6 +238,51 @@ class ArticlesService {
     const snapshot = await query.get();
 
     return snapshot.docs.map(doc => doc.data());
+  }
+
+  async listUserFeed(params: UserFeedParams): Promise<Article[]> {
+    const user = await this.usersService.getUserById(params.userId);
+
+    if (!user) {
+      throw new NotFoundError(`user "${params.userId}" not found`);
+    }
+
+    // TODO(Marcus): optimize this
+    const followedUserIds = await this.profilesService.listFollowed(user.id);
+
+    let followedUserArticles = (
+      await Promise.all(
+        followedUserIds.map(async followedUserId => {
+          return await this.listArticles({
+            orderBy: [
+              {
+                field: 'createdAt',
+                direction: 'desc',
+              },
+            ],
+            authorId: followedUserId,
+          });
+        })
+      )
+    ).flat();
+
+    followedUserArticles.sort(
+      (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
+    );
+
+    if (params.offset) {
+      const offset = await Joi.number().integer().validateAsync(params.offset);
+
+      followedUserArticles = followedUserArticles.slice(offset);
+    }
+
+    if (params.limit) {
+      const limit = await Joi.number().integer().validateAsync(params.limit);
+
+      followedUserArticles = followedUserArticles.slice(0, limit);
+    }
+
+    return followedUserArticles;
   }
 
   async updateArticle(

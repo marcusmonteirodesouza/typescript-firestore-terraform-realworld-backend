@@ -42,6 +42,22 @@ class ProfilesService {
     });
   }
 
+  async listFollowed(followerId: string): Promise<string[]> {
+    const follower = await this.usersService.getUserById(followerId);
+
+    if (!follower) {
+      throw new NotFoundError(`follower "${followerId}" not found`);
+    }
+
+    const snapshot = await this.firestore
+      .collection(this.followsCollection)
+      .select('followeeId')
+      .where('followerId', '==', follower.id)
+      .get();
+
+    return snapshot.docs.map(doc => doc.data().followeeId);
+  }
+
   async unfollowUser(followerId: string, followeeId: string): Promise<void> {
     if (followerId === followeeId) {
       throw new RangeError('cannot unfollow ownself');

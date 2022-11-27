@@ -20,7 +20,11 @@ const jwtService = new JWTService(usersService, config.jwt.secretKey, {
 
 const profilesService = new ProfilesService(firestore, usersService);
 
-const articlesService = new ArticlesService(firestore, usersService);
+const articlesService = new ArticlesService(
+  firestore,
+  usersService,
+  profilesService
+);
 
 const auth = new Auth(jwtService);
 

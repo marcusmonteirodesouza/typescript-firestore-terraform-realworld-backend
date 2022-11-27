@@ -192,6 +192,62 @@ class ArticlesRouter {
     );
 
     router.get(
+      '/articles/feed',
+      celebrate({
+        [Segments.QUERY]: Joi.object().keys({
+          limit: Joi.number().integer(),
+          offset: Joi.number().integer(),
+        }),
+      }),
+      this.auth.requireAuth,
+      async (req, res, next) => {
+        try {
+          const {limit: limitString, offset: offsetString} = req.query;
+
+          let limit;
+          if (limitString) {
+            limit = Number.parseInt(limitString as string);
+          } else {
+            limit = 20;
+          }
+
+          let offset;
+          if (offsetString) {
+            offset = Number.parseInt(offsetString as string);
+          } else {
+            offset = 0;
+          }
+
+          const user = req.user!;
+
+          const articles = await this.articlesService.listUserFeed({
+            userId: user.id,
+            limit,
+            offset,
+          });
+
+          // TODO(Marcus): Optimize this. Maybe get a list of profiles and then merge.
+          const articlesDtos = await Promise.all(
+            articles.map(async article => {
+              const favorited = article.favoritedBy.includes(user.id);
+
+              const authorProfile = await this.profilesService.getProfile(
+                article.authorId,
+                user.id
+              );
+
+              return new ArticleDto(article, favorited, authorProfile);
+            })
+          );
+
+          return res.json(new MultipleArticlesDto(articlesDtos));
+        } catch (err) {
+          return next(err);
+        }
+      }
+    );
+
+    router.get(
       '/articles/:slug',
       this.auth.optionalAuth,
       async (req, res, next) => {
@@ -309,15 +365,16 @@ class ArticlesRouter {
           // TODO(Marcus): Optimize this. Maybe get a list of profiles and then merge.
           const articlesDtos = await Promise.all(
             articles.map(async article => {
-              let authorProfile: Profile;
               let favorited = false;
+              let authorProfile: Profile;
 
               if (req.user) {
+                favorited = article.favoritedBy.includes(req.user.id);
+
                 authorProfile = await this.profilesService.getProfile(
                   article.authorId,
                   req.user.id
                 );
-                favorited = article.favoritedBy.includes(req.user.id);
               } else {
                 authorProfile = await this.profilesService.getProfile(
                   article.authorId
