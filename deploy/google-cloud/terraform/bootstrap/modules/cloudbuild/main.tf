@@ -16,6 +16,8 @@ resource "google_cloudbuild_trigger" "push_to_branch" {
   substitutions = {
     _TFSTATE_BUCKET = var.tfstate_bucket
     _DEPLOY         = var.deploy_on_push_to_branch
+    _REGION         = var.region
+    _BACKEND_IMAGE  = var.backend_image
   }
 }
 
@@ -36,5 +38,7 @@ resource "google_cloudbuild_trigger" "tag_commit" {
 
   substitutions = {
     _TFSTATE_BUCKET = var.tfstate_bucket
+    _REGION         = var.region
+    _BACKEND_IMAGE  = var.backend_image
   }
 }
