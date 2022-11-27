@@ -3,6 +3,7 @@ locals {
 
   cloudbuild_sa_project_roles = [
     "roles/compute.admin",
+    "roles/datastore.indexAdmin",
     "roles/iam.serviceAccountCreator",
     "roles/iam.serviceAccountUser",
     "roles/run.admin",

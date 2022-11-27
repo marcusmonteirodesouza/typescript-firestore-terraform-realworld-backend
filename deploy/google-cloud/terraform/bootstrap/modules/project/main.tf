@@ -3,6 +3,7 @@ locals {
     "artifactregistry.googleapis.com",
     "cloudbuild.googleapis.com",
     "cloudresourcemanager.googleapis.com",
+    "firestore.googleapis.com",
     "iam.googleapis.com",
     "run.googleapis.com",
     "secretmanager.googleapis.com"
