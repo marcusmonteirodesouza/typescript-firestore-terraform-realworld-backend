@@ -52,7 +52,7 @@ It depends on [Firestore](https://cloud.google.com/firestore), a Serverless docu
 1. Comment out the entire contents of the [`backend.tf`](https://developer.hashicorp.com/terraform/language/settings/backends/gcs) file.
 1. Create a [`terraform.tfvars`](https://developer.hashicorp.com/terraform/language/values/variables#variable-definitions-tfvars-files) file and add your variables' values.
 1. Run `terraform init`.
-1. Run `terraform apply -target=module.bootstrap_project`.
+1. Run `terraform apply -target=module.project`.
 1. Uncomment the `backend.tf` file's contents and update the `bucket` argument to the value of the `tfstate_bucket` output.
 1. Run `terraform init` and type `yes`.
 1. [Manually connect the Github repositories via the console in CloudBuild](https://cloud.google.com/build/docs/automating-builds/github/connect-repo-github). Do not create a Trigger, just click `DONE` once the repository is connected.
