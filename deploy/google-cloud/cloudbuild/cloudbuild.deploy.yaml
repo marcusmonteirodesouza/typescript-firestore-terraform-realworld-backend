@@ -1,14 +1,6 @@
 substitutions:
   _TF_VERSION: 1.3.5
-  _BACKEND_IMAGE_FULL: '${_BACKEND_IMAGE}:${TAG_NAME}'
 steps:
-  - id: 'docker tag'
-    name: 'gcr.io/cloud-builders/docker'
-    args:
-      - 'tag'
-      - '${_BACKEND_IMAGE}:${COMMIT_SHA}'
-      - '${_BACKEND_IMAGE}:${COMMIT_SHA}'
-      - '${_BACKEND_IMAGE}:${TAG_NAME}'
   - id: 'tf deploy'
     name: 'hashicorp/terraform:${_TF_VERSION}'
     entrypoint: 'sh'
@@ -20,6 +12,6 @@ steps:
         terraform apply \
           -var="project_id=${PROJECT_ID}" \
           -var="region=${_REGION}" \
-          -var="backend_image=${_BACKEND_IMAGE_FULL}" \
+          -var="backend_image=${_BACKEND_IMAGE}" \
           -var="domain=${_DOMAIN}" \
           --auto-approve
