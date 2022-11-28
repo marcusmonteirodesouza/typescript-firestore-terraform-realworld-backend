@@ -60,14 +60,15 @@ It depends on [Firestore](https://cloud.google.com/firestore), a Serverless docu
 
 ### Build
 
+1. Set the `set_build_pipeline` variable to `true` if you wish to provision a Build pipeline in the project.
 1. A [Cloud Build](https://cloud.google.com/build) shoud run to build and push a container image to [Artifact Registry](https://cloud.google.com/artifact-registry) everytime you push a commit to the branch corresponding to the value you set for the `github_repo_branch` variable.
-1. If you set the value of the `deploy_on_push_to_branch` variable to `true` it will also deploy the system. This is useful for development environments (for example, deploying on every push to the `main` branch).
+1. It will also deploy the system into a "Development" environment.
+1. After the system is deployed, [set up HTTPS for the created Load Balancers](https://cloud.google.com/iap/docs/load-balancer-howto#update_dns).
 
 ![Build Pipeline](./google-cloud-build-pipeline.png)
 
-### Deploy
+### Tag
 
 1. [Create a Release](https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository#creating-a-release) on Github and tag the commit with a value matching the regex you used as the value of the `github_repo_commit_tag` variable.
-1. After the system is deployed, [set up HTTPS for the created Load Balancers](https://cloud.google.com/iap/docs/load-balancer-howto#update_dns).
 
-![Deploy Pipeline](./google-cloud-deploy-pipeline.png)
+![Tag Pipeline](./google-cloud-tag-pipeline.png)

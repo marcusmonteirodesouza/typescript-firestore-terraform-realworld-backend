@@ -8,35 +8,6 @@ module "project" {
   region          = var.region
 }
 
-module "firestore" {
-  source = "./modules/firestore"
-
-  project_id = module.project.project_id
-  region     = var.region
-}
-
-module "artifact_registry" {
-  source = "./modules/artifact_registry"
-
-  project_id = module.project.project_id
-  region     = var.region
-}
-
-module "cloudbuild" {
-  source = "./modules/cloudbuild"
-
-  project_id               = module.project.project_id
-  region                   = var.region
-  tfstate_bucket           = module.project.tfstate_bucket
-  github_repo_owner        = var.github_repo_owner
-  github_repo_name         = var.github_repo_name
-  github_repo_branch       = var.github_repo_branch
-  github_repo_commit_tag   = var.github_repo_commit_tag
-  deploy_on_push_to_branch = var.deploy_on_push_to_branch
-  domain                   = var.domain
-  backend_image            = module.artifact_registry.backend_image
-}
-
 resource "google_secret_manager_secret" "bootstrap_tfvars" {
   project   = module.project.project_id
   secret_id = "bootstrap-terraform-tfvars"
