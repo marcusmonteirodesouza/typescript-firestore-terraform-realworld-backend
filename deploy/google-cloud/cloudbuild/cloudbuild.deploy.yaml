@@ -12,6 +12,6 @@ steps:
         terraform apply \
           -var="project_id=${PROJECT_ID}" \
           -var="region=${_REGION}" \
-          -var="backend_image=${_BACKEND_IMAGE}" \
+          -var="backend_image=${_BACKEND_IMAGE}:{TAG_NAME}" \
           -var="domain=${_DOMAIN}" \
           --auto-approve
