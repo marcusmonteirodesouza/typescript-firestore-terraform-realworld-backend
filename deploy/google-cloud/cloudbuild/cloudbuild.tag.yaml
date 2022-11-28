@@ -6,5 +6,4 @@ steps:
     args:
       - 'tag'
       - '${_BACKEND_IMAGE}:${COMMIT_SHA}'
-      - '${_BACKEND_IMAGE}:${COMMIT_SHA}'
       - '${_BACKEND_IMAGE}:${TAG_NAME}'
