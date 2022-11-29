@@ -19,6 +19,6 @@ output "artifact_registry_repository" {
 }
 
 output "backend_image" {
-  value       = google_artifact_registry_repository.realworld.repository_id
+  value       = local.backend_image
   description = "The Backend Docker image."
 }

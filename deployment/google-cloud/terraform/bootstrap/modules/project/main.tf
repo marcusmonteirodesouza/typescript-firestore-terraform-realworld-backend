@@ -44,7 +44,7 @@ resource "google_artifact_registry_repository_iam_member" "member" {
   project    = var.bootstrap_project_id
   location   = var.region
   repository = var.bootstrap_project_artifact_registry_repository
-  role       = "roles/artifactregistry.admin"
+  role       = "roles/artifactregistry.repoAdmin"
   member     = "serviceAccount:${local.cloudbuild_sa_email}"
 
   depends_on = [

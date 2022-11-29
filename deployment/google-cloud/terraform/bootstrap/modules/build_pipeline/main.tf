@@ -29,7 +29,7 @@ resource "google_cloudbuild_trigger" "build" {
     }
   }
 
-  filename = "deploy/google-cloud/cloudbuild/cloudbuild.build.yaml"
+  filename = "deployment/google-cloud/cloudbuild/cloudbuild.build.yaml"
 
   substitutions = {
     _TFSTATE_BUCKET = google_storage_bucket.tfstate.name
