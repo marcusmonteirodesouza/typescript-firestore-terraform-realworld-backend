@@ -71,8 +71,12 @@ This process creates the projects, creates the [Artifact Registry](https://cloud
 
 ![Build Pipeline](./google-cloud-build-pipeline.png)
 
-### Deployment
+### Tag and Deployment
 
 1. [Create a Release](https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository#creating-a-release) on Github and tag the commit with a value matching the regex you used as the value of the `github_repo_commit_tag` variable.
+1. This will run the Tag pipeline to tag the artifacts.
+1. It will also trigger a Deployment to Production.
+
+![Tag Pipeline](./google-cloud-tag-pipeline.png)
 
 ![Deployment Pipeline](./google-cloud-deployment-pipeline.png)

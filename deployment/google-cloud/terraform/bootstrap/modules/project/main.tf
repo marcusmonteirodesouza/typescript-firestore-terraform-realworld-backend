@@ -9,7 +9,7 @@ locals {
   cloudbuild_sa_email = "${google_project.project.number}@cloudbuild.gserviceaccount.com"
 
   cloudbuild_sa_project_roles = [
-    "roles/datastore.indexAdmin",
+    "roles/datastore.owner",
     "roles/iam.securityAdmin",
     "roles/serviceusage.serviceUsageAdmin"
   ]
