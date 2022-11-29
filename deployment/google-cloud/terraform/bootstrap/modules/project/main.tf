@@ -43,11 +43,11 @@ resource "google_project_iam_member" "cloudbuild_sa" {
   ]
 }
 
-resource "google_artifact_registry_repository_iam_member" "member" {
+resource "google_artifact_registry_repository_iam_member" "cloudbuild_sa_admin" {
   project    = var.bootstrap_project_id
   location   = var.region
   repository = var.bootstrap_project_artifact_registry_repository
-  role       = "roles/artifactregistry.repoAdmin"
+  role       = "roles/artifactregistry.admin"
   member     = "serviceAccount:${local.cloudbuild_sa_email}"
 
   depends_on = [
