@@ -1,4 +1,12 @@
 locals {
+  backend_image_split = split("/", var.backend_image)
+
+  backend_image_location = local.backend_image_split[0]
+
+  backend_image_project_id = local.backend_image_split[1]
+
+  backend_image_repository = local.backend_image_split[2]
+
   backend_sa_project_roles = [
     "roles/datastore.user",
   ]
@@ -42,6 +50,14 @@ resource "google_project_iam_member" "backend_sa" {
   project  = data.google_project.project.project_id
   role     = each.value
   member   = "serviceAccount:${google_service_account.backend.email}"
+}
+
+resource "google_artifact_registry_repository_iam_member" "backend_sa" {
+  project    = local.backend_image_project_id
+  location   = local.backend_image_location
+  repository = local.backend_image_repository
+  role       = "roles/artifactregistry.reader"
+  member     = "serviceAccount:${google_service_account.backend.email}"
 }
 
 # Firestore Indexes
@@ -146,7 +162,7 @@ resource "google_cloud_run_service" "backend" {
 
   depends_on = [
     google_secret_manager_secret_iam_member.backend_sa_jwt_secret_key_access,
-    google_project_iam_member.backend_sa,
+    google_artifact_registry_repository_iam_member.backend_sa
   ]
 }
 
