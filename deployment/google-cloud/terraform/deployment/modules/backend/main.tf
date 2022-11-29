@@ -1,7 +1,7 @@
 locals {
   backend_image_split = split("/", var.backend_image)
 
-  backend_image_location = local.backend_image_split[0]
+  backend_image_location = split("-docker", local.backend_image_split[0])[0]
 
   backend_image_project_id = local.backend_image_split[1]
 
