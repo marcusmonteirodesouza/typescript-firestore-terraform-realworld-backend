@@ -1,0 +1,19 @@
+steps:
+  - id: 'docker pull'
+    name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'pull'
+      - '${_BACKEND_IMAGE}:${COMMIT_SHA}'
+  - id: 'docker tag'
+    name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'tag'
+      - '${_BACKEND_IMAGE}:${COMMIT_SHA}'
+      - '${_BACKEND_IMAGE}:${TAG_NAME}'
+  - id: 'docker push'
+    name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - '${_BACKEND_IMAGE}:${TAG_NAME}'
+options:
+  machine_type: 'E2_HIGHCPU_8'

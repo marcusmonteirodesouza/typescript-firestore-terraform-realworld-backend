@@ -23,6 +23,11 @@ variable "github_repo_branch" {
   description = "Regex of branches to match to trigger a Build."
 }
 
+variable "github_repo_commit_tag" {
+  type        = string
+  description = "Regex of tags to match to trigger a Deployment."
+}
+
 variable "domain" {
   type        = string
   description = "The domain name."

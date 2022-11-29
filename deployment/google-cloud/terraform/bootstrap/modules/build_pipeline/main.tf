@@ -38,3 +38,24 @@ resource "google_cloudbuild_trigger" "build" {
     _BACKEND_IMAGE  = var.backend_image
   }
 }
+
+# Tag Pipeline
+resource "google_cloudbuild_trigger" "tag" {
+  project     = var.project_id
+  name        = "tag-github-push-to-${var.github_repo_branch}"
+  description = "Tag Pipeline - GitHub Repository Tag Commit ${var.github_repo_commit_tag}"
+
+  github {
+    owner = var.github_repo_owner
+    name  = var.github_repo_name
+    push {
+      tag = var.github_repo_commit_tag
+    }
+  }
+
+  filename = "deployment/google-cloud/cloudbuild/cloudbuild.tag.yaml"
+
+  substitutions = {
+    _BACKEND_IMAGE = var.backend_image
+  }
+}

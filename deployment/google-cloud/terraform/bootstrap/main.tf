@@ -29,13 +29,14 @@ module "project" {
 module "build_pipeline" {
   source = "./modules/build_pipeline"
 
-  project_id         = module.project["development"].project_id
-  region             = var.development.region
-  github_repo_owner  = var.github_repo_owner
-  github_repo_name   = var.github_repo_name
-  github_repo_branch = var.github_repo_branch
-  domain             = var.development.domain
-  backend_image      = module.bootstrap_project.backend_image
+  project_id             = module.project["development"].project_id
+  region                 = var.development.region
+  github_repo_owner      = var.github_repo_owner
+  github_repo_name       = var.github_repo_name
+  github_repo_branch     = var.github_repo_branch
+  github_repo_commit_tag = var.github_repo_commit_tag
+  domain                 = var.development.domain
+  backend_image          = module.bootstrap_project.backend_image
 }
 
 module "deployment_pipeline" {
