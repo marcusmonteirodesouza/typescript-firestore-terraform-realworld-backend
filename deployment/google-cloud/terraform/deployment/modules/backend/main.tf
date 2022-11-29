@@ -147,10 +147,6 @@ resource "google_cloud_run_service" "backend" {
   depends_on = [
     google_secret_manager_secret_iam_member.backend_sa_jwt_secret_key_access,
     google_project_iam_member.backend_sa,
-    google_firestore_index.tags_and_created_at,
-    google_firestore_index.author_id_and_created_at,
-    google_firestore_index.favorited_by_and_created_at,
-    google_firestore_index.article_id_and_created_at
   ]
 }
 
