@@ -23,7 +23,7 @@ steps:
     args:
       - '-c'
       - |
-        cd deploy/google-cloud/terraform/apis_and_cloudbuild_sa_roles
+        cd deployment/google-cloud/terraform/apis_and_cloudbuild_sa_roles
         terraform init "-backend-config=bucket=${_TFSTATE_BUCKET}"
         terraform apply \
           -var="project_id=${PROJECT_ID}" \
@@ -34,7 +34,7 @@ steps:
     args:
       - '-c'
       - |
-        cd deploy/google-cloud/terraform/deployment
+        cd deployment/google-cloud/terraform/deployment
         terraform init "-backend-config=bucket=${_TFSTATE_BUCKET}"
         terraform apply \
           -var="project_id=${PROJECT_ID}" \
