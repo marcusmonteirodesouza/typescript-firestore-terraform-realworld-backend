@@ -42,3 +42,5 @@ steps:
           -var="backend_image=${_BACKEND_IMAGE}:${TAG_NAME}" \
           -var="domain=${_DOMAIN}" \
           --auto-approve
+options:
+  machine_type: 'E2_HIGHCPU_8'

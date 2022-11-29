@@ -1,13 +1,16 @@
 locals {
   enable_apis = [
     "cloudbuild.googleapis.com",
-    "firestore.googleapis.com"
+    "cloudresourcemanager.googleapis.com",
+    "firestore.googleapis.com",
+    "serviceusage.googleapis.com"
   ]
 
   cloudbuild_sa_email = "${google_project.project.number}@cloudbuild.gserviceaccount.com"
 
   cloudbuild_sa_project_roles = [
     "roles/iam.securityAdmin",
+    "roles/serviceusage.serviceUsageAdmin"
   ]
 }
 
