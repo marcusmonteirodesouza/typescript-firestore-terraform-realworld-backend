@@ -1,4 +1,6 @@
 locals {
+  cloudrun_service_agent = "service-${data.google_project.project.number}@serverless-robot-prod.iam.gserviceaccount.com"
+
   backend_image_split = split("/", var.backend_image)
 
   backend_image_location = split("-docker", local.backend_image_split[0])[0]
@@ -33,6 +35,15 @@ resource "google_secret_manager_secret_version" "jwt_secret_key" {
   secret_data = random_password.jwt_secret_key.result
 }
 
+# Cloud Run Service Agent
+resource "google_artifact_registry_repository_iam_member" "cloudrun_service_agent" {
+  project    = local.backend_image_project_id
+  location   = local.backend_image_location
+  repository = local.backend_image_repository
+  role       = "roles/artifactregistry.reader"
+  member     = "serviceAccount:${local.cloudrun_service_agent}"
+}
+
 # Cloud Run Service Account
 resource "google_service_account" "backend" {
   account_id   = "backend-cloud-run-sa"
@@ -50,14 +61,6 @@ resource "google_project_iam_member" "backend_sa" {
   project  = data.google_project.project.project_id
   role     = each.value
   member   = "serviceAccount:${google_service_account.backend.email}"
-}
-
-resource "google_artifact_registry_repository_iam_member" "backend_sa" {
-  project    = local.backend_image_project_id
-  location   = local.backend_image_location
-  repository = local.backend_image_repository
-  role       = "roles/artifactregistry.reader"
-  member     = "serviceAccount:${google_service_account.backend.email}"
 }
 
 # Firestore Indexes
@@ -161,8 +164,8 @@ resource "google_cloud_run_service" "backend" {
   }
 
   depends_on = [
-    google_secret_manager_secret_iam_member.backend_sa_jwt_secret_key_access,
-    google_artifact_registry_repository_iam_member.backend_sa
+    google_artifact_registry_repository_iam_member.cloudrun_service_agent,
+    google_secret_manager_secret_iam_member.backend_sa_jwt_secret_key_access
   ]
 }
 
