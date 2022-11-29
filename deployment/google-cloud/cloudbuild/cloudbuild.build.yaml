@@ -25,6 +25,7 @@ steps:
         terraform apply \
           -var="project_id=${PROJECT_ID}" \
           --auto-approve
+    waitFor: ["-"]
   - id: 'tf deployment'
     name: 'hashicorp/terraform:${_TF_VERSION}'
     entrypoint: 'sh'
