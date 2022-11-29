@@ -14,13 +14,24 @@ steps:
     args:
       - 'push'
       - '${_BACKEND_IMAGE_FULL}'
-  - id: 'tf deploy'
+  - id: 'tf apis and cloudbuild sa roles'
     name: 'hashicorp/terraform:${_TF_VERSION}'
     entrypoint: 'sh'
     args:
       - '-c'
       - |
-        cd deploy/google-cloud/terraform/deploy
+        cd deploy/google-cloud/terraform/apis_and_cloudbuild_sa_roles
+        terraform init "-backend-config=bucket=${_TFSTATE_BUCKET}"
+        terraform apply \
+          -var="project_id=${PROJECT_ID}" \
+          --auto-approve
+  - id: 'tf deployment'
+    name: 'hashicorp/terraform:${_TF_VERSION}'
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - |
+        cd deploy/google-cloud/terraform/deployment
         terraform init "-backend-config=bucket=${_TFSTATE_BUCKET}"
         terraform apply \
           -var="project_id=${PROJECT_ID}" \

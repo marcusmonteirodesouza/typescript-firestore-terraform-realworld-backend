@@ -40,6 +40,8 @@ It depends on [Firestore](https://cloud.google.com/firestore), a Serverless docu
 
 ### Bootstrap
 
+This process creates the projects, creates the [Artifact Registry](https://cloud.google.com/artifact-registry) repository (in the Bootstrap project), enables the [Cloud Build](https://cloud.google.com/build) API, grants the `iam.securityAdmin` to the Cloud Build Service Account, sets up the Build Pipeline in the `development` project and the Deployment pipeline in the `production` project.
+
 1. Create an [Organization](https://cloud.google.com/resource-manager/docs/creating-managing-organization) on Google Cloud.
 1. Create a [Folder](https://cloud.google.com/resource-manager/docs/creating-managing-folders) on your Organization to create your projects in.
 1. Create a [Billing Account](https://cloud.google.com/billing/docs/how-to/manage-billing-account#create_a_new_billing_account).
@@ -48,27 +50,29 @@ It depends on [Firestore](https://cloud.google.com/firestore), a Serverless docu
 1. Run [`gcloud auth login`](https://cloud.google.com/sdk/gcloud/reference/auth/login).
 1. Run [`gcloud auth application-default login`](https://cloud.google.com/sdk/gcloud/reference/auth/application-default/login).
 1. Make sure you own a domain name and have access to it's DNS configuration. This will be necessary to [enable HTTPS](https://cloud.google.com/iap/docs/load-balancer-howto#update_dns).
-1. `cd` into the [`deploy/google-cloud/terraform/bootstrap`](./deploy/google-cloud/terraform/bootstrap).
+1. `cd` into the [`deployment/google-cloud/terraform/bootstrap`](./deployment/google-cloud/terraform/bootstrap).
 1. Comment out the entire contents of the [`backend.tf`](https://developer.hashicorp.com/terraform/language/settings/backends/gcs) file.
 1. Create a [`terraform.tfvars`](https://developer.hashicorp.com/terraform/language/values/variables#variable-definitions-tfvars-files) file and add your variables' values.
 1. Run `terraform init`.
-1. Run `terraform apply -target=module.project`.
+1. Run `terraform apply -target=module.bootstrap_project.google_project_service.enable_apis`.
+1. Wait a few minutes until the APIs are enabled.
+1. Run `terraform apply -target=module.bootstrap_project`.
 1. Uncomment the `backend.tf` file's contents and update the `bucket` argument to the value of the `tfstate_bucket` output.
 1. Run `terraform init` and type `yes`.
+1. Run `terraform apply -target=module.project`.
 1. [Manually connect the Github repositories via the console in CloudBuild](https://cloud.google.com/build/docs/automating-builds/github/connect-repo-github). Do not create a Trigger, just click `DONE` once the repository is connected.
 1. Run `terraform apply`.
 
 ### Build
 
-1. Set the `set_build_pipeline` variable to `true` if you wish to provision a Build pipeline in the project.
 1. A [Cloud Build](https://cloud.google.com/build) shoud run to build and push a container image to [Artifact Registry](https://cloud.google.com/artifact-registry) everytime you push a commit to the branch corresponding to the value you set for the `github_repo_branch` variable.
 1. It will also deploy the system into a "Development" environment.
 1. After the system is deployed, [set up HTTPS for the created Load Balancers](https://cloud.google.com/iap/docs/load-balancer-howto#update_dns).
 
 ![Build Pipeline](./google-cloud-build-pipeline.png)
 
-### Tag
+### Deployment
 
 1. [Create a Release](https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository#creating-a-release) on Github and tag the commit with a value matching the regex you used as the value of the `github_repo_commit_tag` variable.
 
-![Tag Pipeline](./google-cloud-tag-pipeline.png)
+![Deployment Pipeline](./google-cloud-deployment-pipeline.png)
