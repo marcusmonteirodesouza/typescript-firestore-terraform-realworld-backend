@@ -90,6 +90,10 @@ resource "google_firestore_index" "tags_and_created_at" {
     field_path = "createdAt"
     order      = "DESCENDING"
   }
+
+  depends_on = [
+    google_firestore_index.author_id_and_created_at
+  ]
 }
 
 resource "google_firestore_index" "favorited_by_and_created_at" {
@@ -104,6 +108,10 @@ resource "google_firestore_index" "favorited_by_and_created_at" {
     field_path = "createdAt"
     order      = "DESCENDING"
   }
+
+  depends_on = [
+    google_firestore_index.tags_and_created_at
+  ]
 }
 
 resource "google_firestore_index" "article_id_and_created_at" {
@@ -118,6 +126,10 @@ resource "google_firestore_index" "article_id_and_created_at" {
     field_path = "createdAt"
     order      = "DESCENDING"
   }
+
+  depends_on = [
+    google_firestore_index.favorited_by_and_created_at
+  ]
 }
 
 # Cloud Run Service
